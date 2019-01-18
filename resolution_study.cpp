@@ -49,6 +49,9 @@ int main(int argc, char **argv){
     int nEvt = -1;
     int firstEvent=0;
 
+	unsigned nLongitudinalSections=4;
+
+
     const struct option longOptions[] = {
         {"help",         no_argument,        0, 'h'},
         {"fileList",     required_argument,  0, 'f'},
@@ -167,14 +170,38 @@ int main(int argc, char **argv){
         detector.getEvent( ievt );
 
 		/* DO stuff per event */
+		// Create subdetector loop? 
+		/* endcap loop */
+        for(unsigned iendcap=0; iendcap<HGCgeom::instance()->nEndcaps(); iendcap++) {
+		// For each ec
+		for(unsigned isection=0; isection<nLongitudinalSections; isection++){
+			// For each section
+			HGCsubdet* subdector = detector.getSubdet(iendcap, isection); 
 
-		if ( detector.areGenPresent() ) {
+		}
+
+
+	
+		}
+
+
+/*		if ( detector.areGenPresent() ) {
 			vector<HGCgen*> gens = detector.getGenAll(); 
+			
+			
 			// Clearly 1 gen per endcap.
 //			cout << "\t" << "gens size:\t" << gens.size() << "\n"; 
 
-			/* Loop over gens (/endcaps) to seed a polerFW method here, to achieve the best possible energy resolution */			
-		}
+			// Loop over gens (/endcaps) to seed a polerFW method here, to achieve the best possible energy resolution
+			for (unsigned igen=0; igen<gens.size(); igen++) {
+				// for each gen <-> ec
+				// following some previous conventions
+				unsigned iendcap = gen->getEndcapId(); 
+				cout << "EC id: " << iendcap << "\tgen id: " << igen << "\n";
+
+			} 
+		} 
+*/
 
 
 
