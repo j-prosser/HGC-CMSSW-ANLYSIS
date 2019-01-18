@@ -53,7 +53,7 @@ void HGCforest::addPoint(const HGCC2D c2d, double w){
         if( NN.distanceNormDAC( &c2d, -0.6, 0.6, 13 ) < radius ) {
             this->getC3D( NN.id() )->addC2D( &c2d );
             int icol = ( (xNorm-_minX)/_dX );
-            int irow = ( (yNorm-_minY)/_dY);
+            int irow = ( (yNorm-_minY)/_dY );
             if ( w ) _grid[icol][irow].addContent( c2d.Energy(), id );
             else     _grid[icol][irow].addContent( 1, id );
         }

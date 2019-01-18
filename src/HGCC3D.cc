@@ -328,7 +328,8 @@ float HGCC3D::getEnergyDensity(vector<HGCC3D> *C3Ds, double radiusRegionNorm, do
 //
 //}
 
-void HGCC3D::print() {
+//yoyo: added const to print methods...
+void HGCC3D::print() const { 
 
     cout << "-------------" << endl;
     cout << " pt : " << this->Pt() << endl

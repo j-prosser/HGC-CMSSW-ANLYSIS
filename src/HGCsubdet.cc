@@ -257,14 +257,15 @@ HGCforest HGCsubdet::getNormTransform_C3Dforest( int nColsTanTheta, double tanTh
 
 
 HGCsingleC3D HGCsubdet::getSingleC3D() {
-
+	/*  */
     HGCsingleC3D singleC3D;
 
-    vector<const HGCC2D*> c2ds = getAll<HGCC2D>();
+	// Get the C2D (get 2d clusters) 
+    vector<const HGCC2D*> c2ds = getAll<HGCC2D>(); 
     
     for(std::vector<const HGCC2D*>::iterator c2d=c2ds.begin(); c2d!=c2ds.end(); c2d++) {
     
-        singleC3D.addPoint( *(*c2d) );
+        singleC3D.addPoint( *(*c2d) ); // Add c2d  
         
     }
     

@@ -78,7 +78,7 @@ int main(int argc, char **argv){
     unsigned nPhiSectors=32; 
     unsigned nLongitudinalSections=4;
     unsigned nNNsearch=9, nNNsum=0;
-    float c3dRadius=0.1;
+    float c3dRadius=0.1; // yoyo: likely need to change this!  
     bool saveEventByEvent = false;
     TString newC3DsStrategy = "none";
 
@@ -216,8 +216,8 @@ int main(int argc, char **argv){
     /* Histograms and graphs */
     
     // gen 
-    TGraph gGenProjXY[HGCgeom::instance()->nEndcaps()][nLongitudinalSections][nPhiSectors];
-    TGraph gGenProjXYnorm[HGCgeom::instance()->nEndcaps()][nLongitudinalSections][nPhiSectors];
+    TGraph gGenProjXY[HGCgeom::instance()->		nEndcaps()][nLongitudinalSections][nPhiSectors];
+    TGraph gGenProjXYnorm[HGCgeom::instance()->	nEndcaps()][nLongitudinalSections][nPhiSectors];
     
     // genpart
 
@@ -265,8 +265,8 @@ int main(int argc, char **argv){
 
     /********************/
     /* Loop Over Events */    
-    unsigned totalEvt = detector.getEvents();
-    nEvt = (nEvt==-1) ? totalEvt : nEvt;
+    unsigned totalEvt = detector.getEvents();	//Number of events
+    nEvt = (nEvt==-1) ? totalEvt : nEvt;			
     if( isBit(verboselevel, VERBOSE_MAIN) )
         cout << " MAIN >> Looping over " << nEvt << " events" << endl;
 
@@ -323,6 +323,9 @@ int main(int argc, char **argv){
                                         
                     unsigned iendcap = gen->getEndcapId();
                     unsigned isector = gen->getPhiSectorProj( nPhiSectors, minPhis, maxPhis, HGCgeom::instance()->layerZ(iendcap, 1) );
+
+					/* yoyo: This loop is redundant */
+					
                     // gGenProjXY[iendcap][isection][isector].SetPoint( gGenProjXY[iendcap][isection][isector].GetN(),
                     //                                                  gen->getZprojection( HGCgeom::instance()->layerZ(iendcap, 1) ).X(), 
                     //                                                  gen->getZprojection( HGCgeom::instance()->layerZ(iendcap, 1) ).Y()
@@ -394,7 +397,9 @@ int main(int argc, char **argv){
                     
                         /* get the trigger cell */
                         const HGCTC* tc = tcs.at(itc);
-                    
+						//tc: trigger cell data at itc (index)
+
+
                         /* DEBUG */
                         if( isBit(verboselevel, VERBOSE_TC) ) {
                             cout << " MAIN >> Energy (MipT) " << tc->MipT() << endl;
@@ -469,10 +474,7 @@ int main(int argc, char **argv){
                         /*** NORM COORDINATES ***/
                         HGCnorm normTransform = detector.getSubdet(iendcap, isection)->getNormTransform_C2D( 200, -0.6, 0.6,
                                                                                                              200, -0.6, 0.6,
-                                                                                                             minPhis[isector], maxPhis[isector], 
-                                                                                                             1
-                                                                                                             
-                            );
+                                                                                                             minPhis[isector], maxPhis[isector], 1);
                         //TH2D hNorm;
                         //normTransform.getTransformedHisto( hNorm );
                         //if( saveEventByEvent )  hNorm.Write(Form("norm_%d",    isector));
@@ -599,6 +601,10 @@ int main(int argc, char **argv){
 
                             if( newC3DsStrategy == "polarFWThresh" ){
 
+								/*Logic for polarFWThresh strategy */
+
+
+// Create Grid, 
                                 HGCpolarHisto<HGCC2D> grid = detector.getSubdet(iendcap, isection)->getPolarFwC3D<HGCC2D>( c3dRadius );
                                 
                                 if( saveEventByEvent ) { 
@@ -645,12 +651,21 @@ int main(int argc, char **argv){
             
             int isubdet = 3;
 
-            for(unsigned iendcap=0; iendcap< HGCgeom::instance()->nEndcaps(); iendcap++ ){
+			cout << "Testing HGCC3D::print()\n";
+
+			//Loop over endcaps
+			for(unsigned iendcap=0; iendcap< HGCgeom::instance()->nEndcaps(); iendcap++ ){
                 vector<const HGCC3D*> C3Ds;
                 
                 C3Ds = detector.getSubdet(iendcap, isubdet)->getAll<HGCC3D>();
                 nC3D[nEvt][iendcap] =  C3Ds.size();
-                
+            
+				for(unsigned iC3D = 0; iC3D < C3Ds.size(); iC3D++){
+					cout << "endcap\t" << iendcap << "\tC3D\t" << iC3D << "\n";
+					C3Ds[iC3D]->print(); 
+					//cout << "\tgen energy\t"((C3Ds[iC3D]->getNearestGen())->getNearestGen())->Energy() << "\n" ; 
+				}
+
             } // endl loop over C3Ds
         
         } // end C3Ds
