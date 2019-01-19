@@ -70,7 +70,7 @@ class HGCC3D : public HGChit {
  
 //    bool isGolden(int maxHoleLayers, int minNumberOfLayers);
 
-    void print();
+    void print() const;
 
  private:
 
