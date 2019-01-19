@@ -138,7 +138,4 @@ echo:
 #	@echo $(MAINS_CPP)
 #	@echo $(EXE)
 #	@echo $(DICTS_H)
-<<<<<<< HEAD
-=======
 
->>>>>>> c8a27643c4138dbae07970c9d3b6eece9f6ed344

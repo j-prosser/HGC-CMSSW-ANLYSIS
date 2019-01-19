@@ -128,14 +128,6 @@ int main(int argc, char **argv){
                   true 
         );   
 
-	HGCsubdet* subdetector = detector.getSubdet(0, 3);
-	vector<HGCgen*> gens = subdetector->getGenAll();
-
-	for (unsigned i; i<gens.size(); i++) {
-			HGCgen* gen = gens.at(i);
-			std::cout << gen->Eta() << "  " << gen->getEndcapId() << "   " << std::endl;
-	}
-	std::cout << "length: " << gens.size() << std::endl;
 
     /********************/
     /* Loop Over Events */
@@ -148,6 +140,20 @@ int main(int argc, char **argv){
         /* Get Entry */
         std::cout << " MAIN >> getting event " << ievt << std::endl;
         detector.getEvent( ievt );
+		for (unsigned i=0; i<2; i++) {
+				HGCsubdet* subdetector = detector.getSubdet(i, 3);
+				vector<HGCgen*> gens = subdetector->getGenAll();
+			
+				HGCgen* gen = gens.at(0);
+				std::cout << "Endcap: " << gen->getEndcapId() << std::endl;
+		
+				std::cout << "Eta: " << gen->Eta() << std::endl;
+				std::cout << "Phi: " << gen->Phi() << std::endl;
+				std::cout << "Xn: " << gen->xNorm() << std::endl;
+				std::cout << "Yn: " << gen->yNorm() << std::endl;
+				std::cout << "Pt: " << gen->Pt() << std::endl;
+				std::cout << "Energy: " << gen->Energy() << std::endl;
+		}
 
     } // end of evt loop
 
