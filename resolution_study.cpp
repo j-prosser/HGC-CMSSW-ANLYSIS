@@ -206,6 +206,7 @@ int main(int argc, char **argv){
 		
 
 			/* polarFWtc routine */
+			if (isection == 3) { // only full system
 
 			unsigned binSums[36] = { 
 
@@ -221,9 +222,12 @@ int main(int argc, char **argv){
 			HGCpolarHisto<HGCTC> grid = detector.getSubdet(iendcap, isection)->getPolarFwC3D<HGCTC>( c3dRadius );
 			newC3Ds[iendcap] = grid.getNewC3Ds( c3dRadius, binSums );
 
-			for(unsigned ic3d=0; ic3d<newC3Ds[iendcap].size(); ic3d++) {
+			for(unsigned ic3d=0; ic3d<newC3Ds[iendcap].size(); ++ic3d) {
 				newC3Ds[iendcap].at(ic3d).setNearestGen( detector.getGenAll() );
 				//Calc energy resolution here(?) 
+				//
+				cout << "iec:"<< iendcap << "\tnC3D: " << newC3Ds[iendcap].size() << endl;
+				newC3Ds[iendcap].at(ic3d).print();
 			}
 
 			// get the TCs
@@ -246,7 +250,7 @@ int main(int argc, char **argv){
 			// Implement Strategy here!
 			// Should implement similar scheme to polarFW, 
 		
-
+			} // END if section==3 loop
 		} // Section Loop
 
 
