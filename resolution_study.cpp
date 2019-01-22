@@ -169,15 +169,27 @@ int main(int argc, char **argv){
         std::cout << " MAIN >> getting event " << ievt << std::endl;
         detector.getEvent( ievt );
 
-		/* DO stuff per event */
-		// Create subdetector loop? 
-		/* endcap loop */
-        for(unsigned iendcap=0; iendcap<HGCgeom::instance()->nEndcaps(); iendcap++) {
-		// For each ec
-		for(unsigned isection=0; isection<nLongitudinalSections; isection++){
-			// For each section
-			HGCsubdet* subdector = detector.getSubdet(iendcap, isection); 
 
+		/// endcap loop
+        for(unsigned iendcap=0; iendcap<HGCgeom::instance()->nEndcaps(); iendcap++) {
+		// For each section in iendcap
+		for(unsigned isection=0; isection<nLongitudinalSections; isection++){
+		
+			// Routine here below resembles HGCsubdet::getGenC3D, but for TC not C2D
+			// 
+
+			HGCsubdet* subdector = detector.getSubdet(iendcap, isection); 
+			// get the TCs
+			vector<const HGCTC*>	TCs = subdector->getAll<HGCTC>();
+			vector<HGCgen*>			gens= subdector->getGenAll();  
+			/// Loop for every TC!
+			for(std::vector<const HGCTC*>::iterator tc=TCs.begin(); tc!=TCs.end(); tc++) {
+			//EVERY TC ! ! !
+			}
+
+
+			// Implement Strategy here!
+			// Should implement similar scheme to polarFW, 
 		}
 
 
