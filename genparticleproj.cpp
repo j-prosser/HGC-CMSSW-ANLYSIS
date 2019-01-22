@@ -36,6 +36,19 @@ const bool flagC2D = true;
 const bool flagC3D = true;
 const bool flagGen = true;
 const bool flagGenPart = false;
+vector<double> _energy_gen;
+vector<double> _pt_gen;
+vector<double> _energy_mes;
+
+double mean(vector<double> vec) {
+		double sum = 0;
+		for (unsigned i=0; i< vec.size(); i++) {
+				sum += vec.at(i);
+		}
+		double mean = sum / vec.size();
+		return mean;
+}
+
 
 int main(int argc, char **argv){
 
@@ -140,25 +153,60 @@ int main(int argc, char **argv){
         /* Get Entry */
         std::cout << " MAIN >> getting event " << ievt << std::endl;
         detector.getEvent( ievt );
+		/* Loop over both endcaps*/
+
 		for (unsigned i=0; i<2; i++) {
 				HGCsubdet* subdetector = detector.getSubdet(i, 3);
 				vector<HGCgen*> gens = subdetector->getGenAll();
 			
 				HGCgen* gen = gens.at(0);
-				std::cout << "Endcap: " << gen->getEndcapId() << std::endl;
-		
-				std::cout << "Eta: " << gen->Eta() << std::endl;
-				std::cout << "Phi: " << gen->Phi() << std::endl;
-				std::cout << "Xn: " << gen->xNorm() << std::endl;
-				std::cout << "Yn: " << gen->yNorm() << std::endl;
-				std::cout << "Pt: " << gen->Pt() << std::endl;
-				std::cout << "Energy: " << gen->Energy() << std::endl;
+				vector<const HGCTC*> TCs = subdetector->getAll<HGCTC>();
+				vector<double> tc_energies_0;
+				vector<double> tc_energies_1;
+
+				for (unsigned i=0; i<TCs.size(); i++) {
+						if (TCs.at(i)->zside() == -1) {
+								tc_energies_0.push_back(TCs.at(i)->Pt());
+						} else {
+								tc_energies_1.push_back(TCs.at(i)->Pt());
+						}
+				}
+
+								
+				/*print the event data for debugging*/
+				if (42) {
+					std::cout << "Endcap: " << gen->getEndcapId() << std::endl;
+					std::cout << "Eta: " << gen->Eta() << std::endl;
+					std::cout << "Phi: " << gen->Phi() << std::endl;
+					std::cout << "Xn: " << gen->xNorm() << std::endl;
+					std::cout << "Yn: " << gen->yNorm() << std::endl;
+					std::cout << "Pt: " << gen->Pt() << std::endl;
+					std::cout << "Energy: " << gen->Energy() << std::endl;
+					if (i == 1) {
+						std::cout << "Pt_measured: " << accumulate(tc_energies_0.begin(), tc_energies_0.end(), 0.0) << std::endl;
+						_energy_mes.push_back(accumulate(tc_energies_0.begin(), tc_energies_0.end(), 0.0));
+					} else { 
+						std::cout << "Pt_measured: " << accumulate(tc_energies_1.begin(), tc_energies_1.end(), 0.0) << std::endl;
+						_energy_mes.push_back(accumulate(tc_energies_1.begin(), tc_energies_1.end(), 0.0));
+
+					}
+							
+				}
+				//save pt and energy data into list
+				_energy_gen.push_back(gen->Energy());
+				_pt_gen.push_back(gen->Pt());
 		}
 
     } // end of evt loop
 
+	//print mean of energies and pts for debugging. WHY ARE THEY DIFFERENT FOR GAMMA INPUT?
+	if (42) {
+		std::cout << "Pt_mean: " << mean(_pt_gen) << std::endl;
+		std::cout << "pt_measured_mean: " << mean(_energy_mes) << std::endl;
+	}
     return 0;
 
 }
+
 
 
