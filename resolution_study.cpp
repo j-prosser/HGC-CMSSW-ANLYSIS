@@ -200,39 +200,37 @@ int main(int argc, char **argv){
 
         /* Get Entry */
         std::cout << " MAIN >> getting event " << ievt << std::endl;
-        detector.getEvent( ievt );
+        
+		/// get event into 'detector' 
+		detector.getEvent( ievt );
 
+		/// get truth data (index is endcap) 
+		vector<HGCgen*> gens  = detector.getGenAll();
 
 		/// endcap loop
         for(unsigned iendcap=0; iendcap<HGCgeom::instance()->nEndcaps(); iendcap++) {
-		// For each section in iendcap
+			// 
+			HGCgen* gen = gens[iendcap]; 
+
+			// For each section in iendcap
 		for(unsigned isection=0; isection<nLongitudinalSections; isection++){
 	
 
-			/* point the correct location */
-            
+			/* point the correct location */ 
 			if( saveEventByEvent )  fileOut->cd( Form("event_%d/endcap_%d/section_%d", ievt, iendcap, isection) );
 
 	
 			// Routine here below resembles HGCsubdet::getGenC3D, but for TC not C2D
 			// 
 
-			//HGCsubdet* subdector = detector.getSubdet(iendcap, isection); 
 		
-
 			/* polarFWtc routine */
 			if (isection == 3) { // only full system
 
-			
-				
-				
-				
-				
-				
-				
-				
-				
-				
+				//TEST gen print
+				//cout << "****TEST****";
+				//cout << "Pt" << gen->Pt() << "\txNorm" << gen->xNorm(); 
+					
 				unsigned binSums[36] = { 
 				13,                                           // 0
 				11, 11, 11,                                   // 1 - 3
@@ -244,7 +242,6 @@ int main(int argc, char **argv){
 			
 			// Trigger from gen loc only
 			HGCC3Dgen C3Dgen = detector.getSubdet(iendcap, isection)->getGenC3D( c3dRadius );
-                                
             genC3Ds[iendcap] = C3Dgen.getNewC3Ds();
 
 			if (verbose) {
@@ -254,35 +251,42 @@ int main(int argc, char **argv){
 				cout << "iC3D:"<< ic3d << "\tngenC3D: " << genC3Ds[iendcap].size() << endl;
 				genC3Ds[iendcap].at(ic3d).print();	
 				}}
-			// Trigger from TCs
+			/*******************************/
+
+			/**** Trigger from TCs ********/
 			HGCpolarHisto<HGCTC> grid = detector.getSubdet(iendcap, isection)->getPolarFwC3D<HGCTC>( c3dRadius );
 			newC3Ds[iendcap] = grid.getNewC3Ds( c3dRadius, binSums );
-
-    
-
-			if(  saveEventByEvent  ) { // verbose
-
-				grid.getHisto()               ->Write( "polarFWtc_gridTcH"  );
-
-				grid.getHistoSums( binSums, true )  ->Write( "polarFWtc_gridTcHS" );
-
-				grid.getHistoMaxima( binSums, "defaultMaximum" ,true )->Write( "polarFWtc_gridTcM"  );
-
-				grid.getGraph()               ->Write( "polarFWtc_gridTcG"  );
+			
+			/// If detailed view is needed
+			if(  saveEventByEvent  ) {
+				grid.getHisto()											->Write( 
+						"polarFWtc_gridTcH"  );
+				grid.getHistoSums( binSums, true )						->Write( 
+						"polarFWtc_gridTcHS" );
+				grid.getHistoMaxima( binSums, "defaultMaximum" ,true )	->Write( 
+						"polarFWtc_gridTcM"  );
+				grid.getGraph()											->Write( 
+						"polarFWtc_gridTcG"  );
 			}
-
+			/// Loop over TC-generated C3Ds
 			for(unsigned ic3d=0; ic3d<newC3Ds[iendcap].size(); ++ic3d) {
-				newC3Ds[iendcap].at(ic3d).setNearestGen( detector.getGenAll() );
+				/*	TODO:
+				 *		- discard c3d which are not pertinent to the event
+				 *		- Energy calculations
+				 *	*/
+
+				//newC3Ds[iendcap].at(ic3d).setNearestGen( detector.getGenAll() );
 				
-				
-				
-				//Calc energy resolution here(?) 
-				//
+
 				if (verbose) {
 				cout << "iC3D:"<< ic3d << "\tnC3D: " << newC3Ds[iendcap].size() << endl;
 				newC3Ds[iendcap].at(ic3d).print();	
-				}
-			
+				}	
+			/************* END of polarFWtc routines************/
+
+
+
+
 			}
 
 			// get the TCs
@@ -301,37 +305,16 @@ int main(int argc, char **argv){
 			//cout << (*tc)->Pt() < "\n"; 
 			//}
 
-
-			// Implement Strategy here!
-			// Should implement similar scheme to polarFW, 
 		
 			} // END if section==3 loop
-		} // Section Loop
+		
+		} // END Section Loop
+
+		} // END Endcap Loop
 
 
-		} // Endcap Loop
-
-
-/*		if ( detector.areGenPresent() ) {
-			vector<HGCgen*> gens = detector.getGenAll(); 
-			
-			
-			// Clearly 1 gen per endcap.
-//			cout << "\t" << "gens size:\t" << gens.size() << "\n"; 
-
-			// Loop over gens (/endcaps) to seed a polerFW method here, to achieve the best possible energy resolution
-			for (unsigned igen=0; igen<gens.size(); igen++) {
-				// for each gen <-> ec
-				// following some previous conventions
-				unsigned iendcap = gen->getEndcapId(); 
-				cout << "EC id: " << iendcap << "\tgen id: " << igen << "\n";
-
-			} 
-		} 
-*/
-
-
-		tNewC3Ds->Fill(); // Fill new C3Ds
+		// Fill root variables
+		tNewC3Ds->Fill();
 		tGenC3Ds->Fill();
 		// Cleanup after root files is filled. 
 		newC3Ds[0].clear();
@@ -340,7 +323,7 @@ int main(int argc, char **argv){
 		genC3Ds[1].clear(); 
 
         cout << " MAIN >> finished event " << ievt << endl;
-    } // end of evt loop
+    } // END Event loop
 
 
 	/*Writing Output File*/
