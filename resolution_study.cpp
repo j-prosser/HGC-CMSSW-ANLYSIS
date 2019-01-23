@@ -69,9 +69,6 @@ int main(int argc, char **argv){
     unsigned nLongitudinalSections=4;
     //unsigned nNNsearch=9, nNNsum=0;
  
-	// Deprecate this! 
-	float c3dRadius = 0.1;
-
 	vector<float> c3dRadii;	
 	float incR = 0.025;
 	unsigned nR = 8;
@@ -254,6 +251,11 @@ int main(int argc, char **argv){
 			/* polarFWtc routine */
 			if (isection == 3) { // only full system
 
+				/*** Loop over R ***/
+				for (unsigned iRad=0; iRad!=c3dRadii.size() ;++iRad) {
+					const float c3dRadius = c3dRadii[iRad];
+					if (verbose) { cout << "\tiRad:" << iRad <<"\tRad:" << c3dRadius << endl;}
+
 				//TEST gen print
 				//cout << "****TEST****";
 				//cout << "Pt" << gen->Pt() << "\txNorm" << gen->xNorm(); 
@@ -302,11 +304,11 @@ int main(int argc, char **argv){
 				 *		- Energy calculations
 				 *	*/
 
-				//newC3Ds[iendcap].at(ic3d).setNearestGen( detector.getGenAll() );
-				
+				//newC3Ds[iendcap].at(ic3d).setNearestGen( detector.getGenAll() );	
 
 				if (verbose) {
-				cout << "iC3D:"<< ic3d << "\|nC3D:" << newC3Ds[iendcap].size() << endl;
+					cout << "iC3D:"<< ic3d << "\|nC3D:" << newC3Ds[iendcap].size() 
+						<< endl;
 				newC3Ds[iendcap].at(ic3d).print();	
 				}	
 			/************* END of polarFWtc routines************/
@@ -332,7 +334,8 @@ int main(int argc, char **argv){
 			//cout << (*tc)->Pt() < "\n"; 
 			//}
 
-		
+				} /*** End radius loop ***/
+
 			} // END if section==3 loop
 		
 		} // END Section Loop
