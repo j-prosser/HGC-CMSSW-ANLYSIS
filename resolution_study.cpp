@@ -148,18 +148,23 @@ int main(int argc, char **argv){
 
     /*********/
     /* trees */
-    TTree *tNewC3Ds = new TTree( "newC3Ds", "newC3Ds" );
+    TTree *tNewC3Ds = new TTree( "newC3Ds", "newC3Ds" );	
+    TTree *tGenC3Ds = new TTree( "genC3Ds", "genC3Ds" );
 //    TTree *tForestC3Ds = new TTree( "forestC3Ds", "forestC3Ds" );
 //    TTree *tC3DsSingle = new TTree( "C3DsSingle", "C3DsSingle" );
 
     vector<HGCC3D> newC3Ds[2];
+    vector<HGCC3D> genC3Ds[2];
 //    vector<HGCC3D> forestC3Ds[2];
 //    vector<HGCC3D> C3DsSingle[2];
 
     tNewC3Ds->Branch( "endcap0", &newC3Ds[0], 64000, 1);
     tNewC3Ds->Branch( "endcap1", &newC3Ds[1], 64000, 1);
+    tGenC3Ds->Branch( "endcap0", &genC3Ds[0], 64000, 1);
+    tGenC3Ds->Branch( "endcap1", &genC3Ds[1], 64000, 1);
+    
     /********************/
-    /* Loop Over Events */
+	/* Loop Over Events */
     unsigned totalEvt = detector.getEvents();
     nEvt = (nEvt==-1) ? totalEvt : nEvt;
 
@@ -236,8 +241,17 @@ int main(int argc, char **argv){
 				};
 			
 			// Trigger from gen loc only
+			HGCC3Dgen C3Dgen = detector.getSubdet(iendcap, isection)->getGenC3D( c3dRadius );
+                                
+            genC3Ds[iendcap] = C3Dgen.getNewC3Ds();
 
-
+			if (verbose) {
+			
+				for(unsigned ic3d=0; ic3d<genC3Ds[iendcap].size(); ++ic3d) {
+						
+				cout << "iC3D:"<< ic3d << "\tngenC3D: " << genC3Ds[iendcap].size() << endl;
+				genC3Ds[iendcap].at(ic3d).print();	
+				}}
 			// Trigger from TCs
 			HGCpolarHisto<HGCTC> grid = detector.getSubdet(iendcap, isection)->getPolarFwC3D<HGCTC>( c3dRadius );
 			newC3Ds[iendcap] = grid.getNewC3Ds( c3dRadius, binSums );
@@ -263,10 +277,10 @@ int main(int argc, char **argv){
 				//Calc energy resolution here(?) 
 				//
 				if (verbose) {
-				cout << "iec:"<< iendcap << "\tnC3D: " << newC3Ds[iendcap].size() << endl;
-				newC3Ds[iendcap].at(ic3d).print();
-			
+				cout << "iC3D:"<< ic3d << "\tnC3D: " << newC3Ds[iendcap].size() << endl;
+				newC3Ds[iendcap].at(ic3d).print();	
 				}
+			
 			}
 
 			// get the TCs
@@ -316,18 +330,21 @@ int main(int argc, char **argv){
 
 
 		tNewC3Ds->Fill(); // Fill new C3Ds
-	
+		tGenC3Ds->Fill();
 		// Cleanup after root files is filled. 
 		newC3Ds[0].clear();
 		newC3Ds[1].clear();
+		genC3Ds[0].clear();
+		genC3Ds[1].clear(); 
 
         cout << " MAIN >> finished event " << ievt << endl;
     } // end of evt loop
 
 
+	/*Writing Output File*/
 	fileOut->cd("/");
 	tNewC3Ds->Write(); 
-
+	tGenC3Ds->Write(); 
 
 //Unused stuff for output
 /*    for(unsigned iendcap=0; iendcap<HGCgeom::instance()->nEndcaps(); iendcap++) {
