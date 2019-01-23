@@ -54,6 +54,9 @@ const int HGCverboselevel = 0; // 0 - Off
  *
  * */
 
+/// Datastructures
+//typedef vector<HGCC3D*> c3d_vec; // used for output?
+
 int main(int argc, char **argv){
 
     /* PARSING THE COMMAND LINE ARGUMENTS */
@@ -72,12 +75,15 @@ int main(int argc, char **argv){
 	vector<float> c3dRadii;	
 	float incR = 0.025;
 	unsigned nR = 8;
-	for (unsigned i=1; i != nR; ++i) {c3dRadii.push_back(i*incR);} 
+	for (unsigned i=1; i != nR+1; ++i) {c3dRadii.push_back(i*incR);} 
 
 	
 	// Command Line Output Options
-	bool verbose = false; 
-	bool saveEventByEvent=true; 
+	bool verbose = true; 
+	bool saveEventByEvent=false; 
+
+	/****************************/
+	/*** Command line options ***/
 
 	const struct option longOptions[] = {
         {"help",         no_argument,        0, 'h'},
@@ -188,11 +194,17 @@ int main(int argc, char **argv){
     tNewC3Ds->Branch( "endcap1", &newC3Ds[1], 64000, 1);
     tGenC3Ds->Branch( "endcap0", &genC3Ds[0], 64000, 1);
     tGenC3Ds->Branch( "endcap1", &genC3Ds[1], 64000, 1);
-    
+
     /********************/
 	/* Loop Over Events */
     unsigned totalEvt = detector.getEvents();
     nEvt = (nEvt==-1) ? totalEvt : nEvt;
+
+	/*******************************/
+	/* Loop over radius structures */
+	vector<HGCC3D> tcC3Ds[2][nR];
+	vector<HGCC3D> geC3Ds[2][nR];
+    
 
     for( int ievt=firstEvent; ievt<(firstEvent+nEvt); ievt++ ){
 		
@@ -271,21 +283,23 @@ int main(int argc, char **argv){
 			
 			// Trigger from gen loc only
 			HGCC3Dgen C3Dgen = detector.getSubdet(iendcap, isection)->getGenC3D( c3dRadius );
-            genC3Ds[iendcap] = C3Dgen.getNewC3Ds();
+//            genC3Ds[iendcap] = C3Dgen.getNewC3Ds();
 
+            geC3Ds[iendcap][iRad] = C3Dgen.getNewC3Ds();
+			
 			if (verbose) {
 			
-				for(unsigned ic3d=0; ic3d<genC3Ds[iendcap].size(); ++ic3d) {
+				for(unsigned ic3d=0; ic3d<geC3Ds[iendcap][iRad].size(); ++ic3d) {
 						
-				cout << "iC3D:"<< ic3d << "\|ngenC3D:" << genC3Ds[iendcap].size() << endl;
-				genC3Ds[iendcap].at(ic3d).print();	
+				cout << "iC3D:"<< ic3d << "\|ngeC3D:" << geC3Ds[iendcap][iRad].size() << endl;
+				geC3Ds[iendcap][iRad].at(ic3d).print();	
 				}}
 			/*******************************/
 
 			/**** Trigger from TCs ********/
 			HGCpolarHisto<HGCTC> grid = detector.getSubdet(iendcap, isection)->getPolarFwC3D<HGCTC>( c3dRadius );
-			newC3Ds[iendcap] = grid.getNewC3Ds( c3dRadius, binSums );
-			
+			//newC3Ds[iendcap] = grid.getNewC3Ds( c3dRadius, binSums );
+			tcC3Ds[iendcap][iRad] = grid.getNewC3Ds( c3dRadius, binSums );
 			/// If detailed view is needed
 			if(  saveEventByEvent  ) {
 				grid.getHisto()											->Write( 
@@ -298,7 +312,7 @@ int main(int argc, char **argv){
 						"polarFWtc_gridTcG"  );
 			}
 			/// Loop over TC-generated C3Ds
-			for(unsigned ic3d=0; ic3d<newC3Ds[iendcap].size(); ++ic3d) {
+			for(unsigned ic3d=0; ic3d<tcC3Ds[iendcap][iRad].size(); ++ic3d) {
 				/*	TODO:
 				 *		- discard c3d which are not pertinent to the event
 				 *		- Energy calculations
@@ -307,9 +321,9 @@ int main(int argc, char **argv){
 				//newC3Ds[iendcap].at(ic3d).setNearestGen( detector.getGenAll() );	
 
 				if (verbose) {
-					cout << "iC3D:"<< ic3d << "\|nC3D:" << newC3Ds[iendcap].size() 
-						<< endl;
-				newC3Ds[iendcap].at(ic3d).print();	
+					cout << "iC3D:"<< ic3d << "\|nC3D:" 
+						<< tcC3Ds[iendcap][iRad].size() << endl;
+				tcC3Ds[iendcap][iRad].at(ic3d).print();	
 				}	
 			/************* END of polarFWtc routines************/
 
@@ -342,15 +356,23 @@ int main(int argc, char **argv){
 
 		} // END Endcap Loop
 
-
+		
 		// Fill root variables
-		tNewC3Ds->Fill();
-		tGenC3Ds->Fill();
+//		tNewC3Ds->Fill();
+//		tGenC3Ds->Fill();
 		// Cleanup after root files is filled. 
-		newC3Ds[0].clear();
-		newC3Ds[1].clear();
-		genC3Ds[0].clear();
-		genC3Ds[1].clear(); 
+//		newC3Ds[0].clear();
+//		newC3Ds[1].clear();
+//		genC3Ds[0].clear();
+//		genC3Ds[1].clear(); 
+
+
+		for (unsigned iendcap=0; iendcap !=2; ++iendcap) {
+			for (unsigned iRad=0; iRad != nR; ++iRad) {
+				tcC3Ds[iendcap][iRad].clear();
+				geC3Ds[iendcap][iRad].clear();
+			}
+		} 
 
         cout << " MAIN >> finished event " << ievt << endl;
     } // END Event loop
