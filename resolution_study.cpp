@@ -31,11 +31,13 @@
 //#include "Ntuplizer.h"
 #include "HGCht.h"
 
+//HGC build options
 const bool flagTCs = true;
 const bool flagC2D = true;
 const bool flagC3D = true;
 const bool flagGen = true;
 const bool flagGenPart = false;
+const int HGCverboselevel = 0; // 0 - Off
 
 /* Deciding structure
  *	Loop over events,
@@ -46,6 +48,9 @@ const bool flagGenPart = false;
  *			(SUM(cluster Pt)  - Pt_truth) / SUM(cluster Pt)	
  *		- Position resolution (In normalised co-ordinates)
  *			xNorm, yNorm, rNorm, by calculating euclidian distances
+ *
+ *	Datastructure for storing resolutions... Make EC independant?:
+ *		E_res, X_res, Y_res, R_res (Per radius - independant var) x number of Schema
  *
  * */
 
@@ -64,9 +69,17 @@ int main(int argc, char **argv){
     unsigned nLongitudinalSections=4;
     //unsigned nNNsearch=9, nNNsum=0;
  
-	float c3dRadius = 0.1; 
+	// Deprecate this! 
+	float c3dRadius = 0.1;
 
-	bool verbose = true; 
+	vector<float> c3dRadii;	
+	float incR = 0.025;
+	unsigned nR = 8;
+	for (unsigned i=1; i != nR; ++i) {c3dRadii.push_back(i*incR);} 
+
+	
+	// Command Line Output Options
+	bool verbose = false; 
 	bool saveEventByEvent=true; 
 
 	const struct option longOptions[] = {
@@ -108,7 +121,8 @@ int main(int argc, char **argv){
             break;
         case 'd':
             firstEvent = atoi( optarg );
-            break;            
+            break;
+
         default:
             return 0;
         }
@@ -143,11 +157,12 @@ int main(int argc, char **argv){
     }
 
     /* build the detector */
+	cout << " MAIN >> building HGC\n";
     HGC detector( fList, 
                   flagTCs, flagC2D, flagC3D, flagGen, flagGenPart, 
-                  true 
+                  true, HGCverboselevel 
         );   
-    
+    cout << " MAIN >> HGC built\n"; 
     // gen 
     
 	
@@ -260,7 +275,7 @@ int main(int argc, char **argv){
 			
 				for(unsigned ic3d=0; ic3d<genC3Ds[iendcap].size(); ++ic3d) {
 						
-				cout << "iC3D:"<< ic3d << "\tngenC3D: " << genC3Ds[iendcap].size() << endl;
+				cout << "iC3D:"<< ic3d << "\|ngenC3D:" << genC3Ds[iendcap].size() << endl;
 				genC3Ds[iendcap].at(ic3d).print();	
 				}}
 			/*******************************/
@@ -291,7 +306,7 @@ int main(int argc, char **argv){
 				
 
 				if (verbose) {
-				cout << "iC3D:"<< ic3d << "\tnC3D: " << newC3Ds[iendcap].size() << endl;
+				cout << "iC3D:"<< ic3d << "\|nC3D:" << newC3Ds[iendcap].size() << endl;
 				newC3Ds[iendcap].at(ic3d).print();	
 				}	
 			/************* END of polarFWtc routines************/

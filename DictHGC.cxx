@@ -37,7 +37,7 @@
 namespace std {} using namespace std;
 
 // Header files passed as explicit arguments
-#include "./inc/HGC.h"
+#include "inc/HGC.h"
 
 // Header files passed via #pragma extra_include
 
@@ -763,7 +763,7 @@ namespace ROOT {
 namespace {
   void TriggerDictionaryInitialization_DictHGC_Impl() {
     static const char* headers[] = {
-"./inc/HGC.h",
+"inc/HGC.h",
 0
     };
     static const char* includePaths[] = {
@@ -777,7 +777,7 @@ namespace {
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 extern int __Cling_Autoloading_Map;
-class __attribute__((annotate("$clingAutoload$./inc/HGC.h")))  HGC;
+class __attribute__((annotate("$clingAutoload$inc/HGC.h")))  HGC;
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
 #line 1 "DictHGC dictionary payload"
@@ -787,7 +787,7 @@ class __attribute__((annotate("$clingAutoload$./inc/HGC.h")))  HGC;
 #endif
 
 #define _BACKWARD_BACKWARD_WARNING_H
-#include "./inc/HGC.h"
+#include "inc/HGC.h"
 
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";

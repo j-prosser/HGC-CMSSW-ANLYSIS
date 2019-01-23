@@ -238,7 +238,8 @@ public:
         unsigned fistBHlayer= (_nLayersEE+_nLayersFH+1);
         for(unsigned ilayer=0; ilayer<_nLayersBH; ilayer++) {
             _layerZ[ilayer+fistBHlayer] = 421.0 + 9.0*(ilayer);   // NOT EXACTLY CORRECT!!!
-            std::cout << ilayer << " " << ilayer+fistBHlayer << " " << _layerZ[ilayer+fistBHlayer] << std::endl; 
+            // geom verbose below
+			//std::cout << ilayer << " " << ilayer+fistBHlayer << " " << _layerZ[ilayer+fistBHlayer] << std::endl; 
             _isTriggerLayer[ilayer+fistBHlayer] = true;
         }
 
