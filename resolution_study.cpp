@@ -37,6 +37,18 @@ const bool flagC3D = true;
 const bool flagGen = true;
 const bool flagGenPart = false;
 
+/* Deciding structure
+ *	Loop over events,
+ *	Loop over radius (say 0.01 - 0.5),
+ *	
+ *	Calcs for different schemes: tc / c2d polar histogram methods
+ *		- Energy resolution: 
+ *			(SUM(cluster Pt)  - Pt_truth) / SUM(cluster Pt)	
+ *		- Position resolution (In normalised co-ordinates)
+ *			xNorm, yNorm, rNorm, by calculating euclidian distances
+ *
+ * */
+
 int main(int argc, char **argv){
 
     /* PARSING THE COMMAND LINE ARGUMENTS */
