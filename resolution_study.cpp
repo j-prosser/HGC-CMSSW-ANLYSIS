@@ -1,3 +1,18 @@
+/*************************************************************************/
+/* TODO:
+ *	- Implement a datastructure for the output
+ *		- cluster: clustering radius vs different schemas
+ *		- data analysis (per event)
+ *
+ *	- Data analysis
+ *		- Implement a scheme to find the 'best' cluster(s) for polarFWtc
+ *		- Implement routine to find Pt differences between gen+tcClu, gen+genClu ...
+ *		- Save everything.
+ *
+ *
+ *
+ */
+/*************************************************************************/
 
 /* C++ */
 #include <iostream>
