@@ -50,10 +50,13 @@ int main(int argc, char **argv){
     int firstEvent=0;
     unsigned nPhiSectors=32; 
     unsigned nLongitudinalSections=4;
-    unsigned nNNsearch=9, nNNsum=0;
+    //unsigned nNNsearch=9, nNNsum=0;
  
 	float c3dRadius = 0.1; 
-    
+
+	bool verbose = true; 
+	bool saveEventByEvent=true; 
+
 	const struct option longOptions[] = {
         {"help",         no_argument,        0, 'h'},
         {"fileList",     required_argument,  0, 'f'},
@@ -164,9 +167,9 @@ int main(int argc, char **argv){
 		
 		/******BUILD DIR HIERARCHY******/
         /* make a directory for this event and the phi sector in iFile */
-/*        TDirectory* eventDir;
+        TDirectory* eventDir;
         if( saveEventByEvent ){
-            eventDir = fileOut->mkdir( Frm("event_%d"i, ievt) );
+            eventDir = fileOut->mkdir( Form("event_%d", ievt) );
             
             fileOut->mkdir( Form("event_%d/endcap_0/", ievt) );
             fileOut->mkdir( Form("event_%d/endcap_1/", ievt) );
@@ -187,7 +190,6 @@ int main(int argc, char **argv){
             eventDir->cd();
             
         }
-*/
 
         /* Get Entry */
         std::cout << " MAIN >> getting event " << ievt << std::endl;
@@ -198,7 +200,13 @@ int main(int argc, char **argv){
         for(unsigned iendcap=0; iendcap<HGCgeom::instance()->nEndcaps(); iendcap++) {
 		// For each section in iendcap
 		for(unsigned isection=0; isection<nLongitudinalSections; isection++){
-		
+	
+
+			/* point the correct location */
+            
+			if( saveEventByEvent )  fileOut->cd( Form("event_%d/endcap_%d/section_%d", ievt, iendcap, isection) );
+
+	
 			// Routine here below resembles HGCsubdet::getGenC3D, but for TC not C2D
 			// 
 
@@ -208,26 +216,57 @@ int main(int argc, char **argv){
 			/* polarFWtc routine */
 			if (isection == 3) { // only full system
 
-			unsigned binSums[36] = { 
-
+			
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				unsigned binSums[36] = { 
 				13,                                           // 0
 				11, 11, 11,                                   // 1 - 3
 				9, 9, 9,                                      // 4 - 6
 				7, 7, 7, 7, 7, 7,                             // 7 - 12
 				5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,  //13 - 27
 				3, 3, 3, 3, 3, 3, 3, 3                        //28 - 35
+				};
+			
+			// Trigger from gen loc only
 
-			};
 
+			// Trigger from TCs
 			HGCpolarHisto<HGCTC> grid = detector.getSubdet(iendcap, isection)->getPolarFwC3D<HGCTC>( c3dRadius );
 			newC3Ds[iendcap] = grid.getNewC3Ds( c3dRadius, binSums );
 
+    
+
+			if(  saveEventByEvent  ) { // verbose
+
+				grid.getHisto()               ->Write( "polarFWtc_gridTcH"  );
+
+				grid.getHistoSums( binSums, true )  ->Write( "polarFWtc_gridTcHS" );
+
+				grid.getHistoMaxima( binSums, "defaultMaximum" ,true )->Write( "polarFWtc_gridTcM"  );
+
+				grid.getGraph()               ->Write( "polarFWtc_gridTcG"  );
+			}
+
 			for(unsigned ic3d=0; ic3d<newC3Ds[iendcap].size(); ++ic3d) {
 				newC3Ds[iendcap].at(ic3d).setNearestGen( detector.getGenAll() );
+				
+				
+				
 				//Calc energy resolution here(?) 
 				//
+				if (verbose) {
 				cout << "iec:"<< iendcap << "\tnC3D: " << newC3Ds[iendcap].size() << endl;
 				newC3Ds[iendcap].at(ic3d).print();
+			
+				}
 			}
 
 			// get the TCs
