@@ -37,7 +37,7 @@
 namespace std {} using namespace std;
 
 // Header files passed as explicit arguments
-#include "./inc/HGCTC.h"
+#include "inc/HGCTC.h"
 
 // Header files passed via #pragma extra_include
 
@@ -270,7 +270,7 @@ namespace ROOT {
 namespace {
   void TriggerDictionaryInitialization_DictHGCTC_Impl() {
     static const char* headers[] = {
-"./inc/HGCTC.h",
+"inc/HGCTC.h",
 0
     };
     static const char* includePaths[] = {
@@ -284,7 +284,7 @@ namespace {
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 extern int __Cling_Autoloading_Map;
-class __attribute__((annotate("$clingAutoload$./inc/HGCTC.h")))  HGCTC;
+class __attribute__((annotate("$clingAutoload$inc/HGCTC.h")))  HGCTC;
 namespace std{template <typename _Tp> struct __attribute__((annotate("$clingAutoload$bits/stl_function.h")))  __attribute__((annotate("$clingAutoload$string")))  less;
 }
 namespace std{template <class _T1, class _T2> struct __attribute__((annotate("$clingAutoload$bits/stl_pair.h")))  __attribute__((annotate("$clingAutoload$string")))  pair;
@@ -300,7 +300,7 @@ namespace std{template <typename _Tp> class __attribute__((annotate("$clingAutol
 #endif
 
 #define _BACKWARD_BACKWARD_WARNING_H
-#include "./inc/HGCTC.h"
+#include "inc/HGCTC.h"
 
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";

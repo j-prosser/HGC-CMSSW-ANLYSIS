@@ -6,8 +6,9 @@
  *
  *	- Data analysis
  *		- Implement a scheme to find the 'best' cluster(s) for polarFWtc
- *		- Implement routine to find Pt differences between gen+tcClu, gen+genClu ...
- *		- Save everything.
+ *		- Implement routine to find Pt differences between gen+tcClu, 
+ *		gen+genClu ...
+ *		- Save everything, as a root TTree
  *
  *
  *
@@ -45,6 +46,8 @@
 #include "HGCROC.h"
 //#include "Ntuplizer.h"
 #include "HGCht.h"
+
+#include "ResolutionStats.h"
 
 //HGC build options
 const bool flagTCs = true;
@@ -210,6 +213,21 @@ int main(int argc, char **argv){
     tGenC3Ds->Branch( "endcap0", &genC3Ds[0], 64000, 1);
     tGenC3Ds->Branch( "endcap1", &genC3Ds[1], 64000, 1);
 
+	
+	ResolutionStats gestats[2][nR]; // 2 Endcaps, nR radii tested
+	ResolutionStats tcstats[2][nR]; // 2 Endcaps, nR radii tested
+
+	/// Current working HERE
+	// - Create a class for storing statistics per event + endcap, for every radius 
+	TTree *tgeStats = new TTree("gestats","gestats"); 	
+	TTree *ttcStats = new TTree("tcstats","tcstats"); 
+	for (int iendcap=0; iendcap != 2; ++iendcap) {
+		for (int iRad=0; iRad != nR; ++iRad) {
+			tgeStats->Branch(Form("radius_%d.endcap_%d", iRad, iendcap), &gestats[iendcap][iRad] ,64000,1);
+			ttcStats->Branch(Form("radius_%d.endcap_%d", iRad, iendcap), &tcstats[iendcap][iRad] ,64000,1);
+	}}
+
+
     /********************/
 	/* Loop Over Events */
     unsigned totalEvt = detector.getEvents();
@@ -304,7 +322,7 @@ int main(int argc, char **argv){
             geC3Ds[iendcap][iRad] = C3Dgen.getNewC3Ds();
 			
 			if (verbose) {
-			
+
 				for(unsigned ic3d=0; ic3d<geC3Ds[iendcap][iRad].size(); ++ic3d) {
 						
 				cout << "iC3D:"<< ic3d << "\|ngeC3D:" << geC3Ds[iendcap][iRad].size() << endl;

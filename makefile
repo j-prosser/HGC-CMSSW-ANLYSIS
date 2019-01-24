@@ -63,7 +63,7 @@ SOURCES_CC  := $(wildcard $(SRC_DIR)/*.cc)
 LIB         := $(SOURCES_CC:$(SRC_DIR)/%.cc=$(LIB_DIR)/%.o)
 
 # all the dictionaries 
-DICTS     = HGC HGCC3D HGCC2D HGCTC HGCgen HGCgenpart HGChit ### add here the classes you wanna add to ROOT ###
+DICTS     = HGC HGCC3D HGCC2D HGCTC HGCgen HGCgenpart HGChit ResolutionStats ### add here the classes you wanna add to ROOT ###
 DICTS_CXX = $(DICTS:%=Dict%.cxx)
 DICTS_H   = $(DICTS:%=$(INC_DIR)/%.h)
 
