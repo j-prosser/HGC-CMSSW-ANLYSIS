@@ -221,6 +221,7 @@ int main(int argc, char **argv){
 	vector<HGCC3D> geC3Ds[2][nR];
     
 
+	///
     for( int ievt=firstEvent; ievt<(firstEvent+nEvt); ievt++ ){
 		
 		/******BUILD DIR HIERARCHY******/
@@ -382,8 +383,13 @@ int main(int argc, char **argv){
 //		genC3Ds[1].clear(); 
 
 
+		/* LOOP over generated clusters [Calcs here?] 
+		 *	Also clears the HGCC3D vectors */
 		for (unsigned iendcap=0; iendcap !=2; ++iendcap) {
 			for (unsigned iRad=0; iRad != nR; ++iRad) {
+
+
+				/// Delete data, at the end of every event loop
 				tcC3Ds[iendcap][iRad].clear();
 				geC3Ds[iendcap][iRad].clear();
 			}
