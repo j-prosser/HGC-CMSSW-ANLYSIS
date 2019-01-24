@@ -419,8 +419,14 @@ int main(int argc, char **argv){
 
 	/*Writing Output File*/
 	fileOut->cd("/");
+
+	// Deprecated C3D storage-> perhaps implement for a single radius.
 	tNewC3Ds->Write(); 
 	tGenC3Ds->Write(); 
+
+	// New stats storage to hold resolution imformation 
+	tgeStats->Write();
+	ttcStats->Write(); 
 
 //Unused stuff for output
 /*    for(unsigned iendcap=0; iendcap<HGCgeom::instance()->nEndcaps(); iendcap++) {
