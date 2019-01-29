@@ -48,6 +48,7 @@
 #include "HGCht.h"
 
 #include "ResolutionStats.h"
+#include "utils.h"
 
 //HGC build options
 const bool flagTCs = true;
@@ -56,6 +57,7 @@ const bool flagC3D = true;
 const bool flagGen = true;
 const bool flagGenPart = false;
 const int HGCverboselevel = 0; // 0 - Off
+
 
 /* Deciding structure
  *	Loop over events,
@@ -89,10 +91,17 @@ int main(int argc, char **argv){
     unsigned nPhiSectors=32; 
     unsigned nLongitudinalSections=4;
     //unsigned nNNsearch=9, nNNsum=0;
- 
+
+
+	/**********************/	
+	/*** Radius options ***/
+
 	vector<float> c3dRadii;	
-	float incR = 0.025;
-	unsigned nR = 8;
+	// Radius increment (step)
+	float incR = 0.05;
+	// Number of radii to be analysed
+	unsigned nR = 2;
+	// Create vector of radii
 	for (unsigned i=1; i != nR+1; ++i) {c3dRadii.push_back(i*incR);} 
 
 	
@@ -198,34 +207,46 @@ int main(int argc, char **argv){
 
     /*********/
     /* trees */
-    TTree *tNewC3Ds = new TTree( "newC3Ds", "newC3Ds" );	
-    TTree *tGenC3Ds = new TTree( "genC3Ds", "genC3Ds" );
+//    TTree *tNewC3Ds = new TTree( "newC3Ds", "newC3Ds" );	
+//    TTree *tGenC3Ds = new TTree( "genC3Ds", "genC3Ds" );
 //    TTree *tForestC3Ds = new TTree( "forestC3Ds", "forestC3Ds" );
 //    TTree *tC3DsSingle = new TTree( "C3DsSingle", "C3DsSingle" );
 
-    vector<HGCC3D> newC3Ds[2];
-    vector<HGCC3D> genC3Ds[2];
+//    vector<HGCC3D> newC3Ds[2];
+//    vector<HGCC3D> genC3Ds[2];
 //    vector<HGCC3D> forestC3Ds[2];
 //    vector<HGCC3D> C3DsSingle[2];
 
-    tNewC3Ds->Branch( "endcap0", &newC3Ds[0], 64000, 1);
-    tNewC3Ds->Branch( "endcap1", &newC3Ds[1], 64000, 1);
-    tGenC3Ds->Branch( "endcap0", &genC3Ds[0], 64000, 1);
-    tGenC3Ds->Branch( "endcap1", &genC3Ds[1], 64000, 1);
+//    tNewC3Ds->Branch( "endcap0", &newC3Ds[0], 64000, 1);
+//    tNewC3Ds->Branch( "endcap1", &newC3Ds[1], 64000, 1);
+//    tGenC3Ds->Branch( "endcap0", &genC3Ds[0], 64000, 1);
+//    tGenC3Ds->Branch( "endcap1", &genC3Ds[1], 64000, 1);
 
 	
-	ResolutionStats gestats[2][nR]; // 2 Endcaps, nR radii tested
-	ResolutionStats tcstats[2][nR]; // 2 Endcaps, nR radii tested
+	//ResolutionStats gestats[2][nR]; // 2 Endcaps, nR radii tested
+	//ResolutionStats tcstats[2][nR]; // 2 Endcaps, nR radii tested
 
 	/// Current working HERE
 	// - Create a class for storing statistics per event + endcap, for every radius 
-	TTree *tgeStats = new TTree("gestats","gestats"); 	
-	TTree *ttcStats = new TTree("tcstats","tcstats"); 
-	for (int iendcap=0; iendcap != 2; ++iendcap) {
-		for (int iRad=0; iRad != nR; ++iRad) {
-			tgeStats->Branch(Form("radius_%d.endcap_%d", iRad, iendcap), &gestats[iendcap][iRad] ,64000,1);
-			ttcStats->Branch(Form("radius_%d.endcap_%d", iRad, iendcap), &tcstats[iendcap][iRad] ,64000,1);
-	}}
+	TTree *tStats = new TTree("tstats","tstats"); 	
+//	TTree *ttcStats = new TTree("tcstats","tcstats"); 
+	
+	//Deprecating following loop, because it *may* be making everything not work!	
+//	for (int iendcap=0; iendcap != 2; ++iendcap) {
+//		for (int iRad=0; iRad != nR; ++iRad) {
+//		/*	tgeStats->Branch(Form("radius_%d.endcap_%d", iRad, iendcap), &gestats[iendcap][iRad] ,64000,1);
+//			ttcStats->Branch(Form("radius_%d.endcap_%d", iRad, iendcap), &tcstats[iendcap][iRad] ,64000,1); */
+//			tgeStats->Branch(Form("radius_%d.endcap_%d", iRad, iendcap), &gestats[iendcap][iRad]);// ,64000,1);
+//			ttcStats->Branch(Form("radius_%d.endcap_%d", iRad, iendcap), &tcstats[iendcap][iRad]);// ,64000,1);
+//		}}
+
+	//No more pre-save sorting!
+	vector<ResolutionStats> gen_stats; 
+	vector<ResolutionStats> tc_stats;
+
+	//Add branches for difference schemes...
+	tStats->Branch( "gen_clusters", &gen_stats, 64000,1);
+	tStats->Branch( "tc_clusters", &tc_stats, 64000,1);
 
 
     /********************/
@@ -291,16 +312,13 @@ int main(int argc, char **argv){
 
 	
 			// Routine here below resembles HGCsubdet::getGenC3D, but for TC not C2D
-			// 
-
-		
 			/* polarFWtc routine */
 			if (isection == 3) { // only full system
 
 				/*** Loop over R ***/
 				for (unsigned iRad=0; iRad!=c3dRadii.size() ;++iRad) {
 					const float c3dRadius = c3dRadii[iRad];
-					if (verbose) { cout << "\tiRad:" << iRad <<"\tRad:" << c3dRadius << endl;}
+					if (verbose) { cout << ">>> iRad:" << iRad <<"\tRad:" << c3dRadius <<" <<<"<< endl;}
 
 				//TEST gen print
 				//cout << "****TEST****";
@@ -345,25 +363,68 @@ int main(int argc, char **argv){
 				grid.getGraph()											->Write( 
 						"polarFWtc_gridTcG"  );
 			}
+			
+			cout << "********************\n";
+			
+			cout << "truth info:\t" << gen->Pt() << " "<< gen->xNorm() <<" " << gen->yNorm() <<endl;
+			
+			// Obtain the closest cluster to truth	
+			auto bestClusterTC = min_element(tcC3Ds[iendcap][iRad].begin(), tcC3Ds[iendcap][iRad].end(), 
+					[gen](HGCC3D& lhs, HGCC3D& rhs) { return getDist(lhs,*gen) < getDist(rhs,*gen);} ) ;   
+			
+			
+			auto bestClusterGen = min_element(geC3Ds[iendcap][iRad].begin(), geC3Ds[iendcap][iRad].end(), 	
+					[gen](HGCC3D& lhs, HGCC3D& rhs) { return getDist(lhs,*gen) < getDist(rhs,*gen);} ) ; 
+
+
+			//Testing
+			if (verbose) {
+				cout << "+++++++++++++++++++++++++++++++++++\n";
+				cout << "TC best cluster; pt:\t"	<< bestClusterTC->Pt()	<< " xNorm/yNorm:  " 
+					<< bestClusterTC->xNorm()	<< "/" << bestClusterTC->yNorm()	<< "\n";
+				cout << "Gen best cluster; pt:\t"	<< bestClusterGen->Pt() << " xNorm/yNorm:  " 
+					<< bestClusterGen->xNorm()	<< "/" << bestClusterGen->yNorm()	<< "\n";
+				cout << "+++++++++++++++++++++++++++++++++++\n";
+			}
+
+			/*
+			cout << "+++++++++++++++++++++++++\n";
+			auto best_pt_tc = min_element( tcC3Ds[iendcap][iRad].begin(), tcC3Ds[iendcap][iRad].end(),
+					[gen] (HGCC3D& lhs, HGCC3D& rhs) {return abs_diff_pt(lhs,*gen) < abs_diff_pt(rhs, *gen);});
+			cout << "best pt: " << best_pt_tc->Pt() << " xnorm "<< best_pt_tc->xNorm() << " ynorm "<< best_pt_tc->yNorm() << endl;
+			cout << "+++++++++++++++++++++++++\n";
+			*/
+	
+			// Calc stats and put into tcstats
+			tc_stats.push_back	(CalculateStats( *bestClusterTC,	gen, c3dRadii[iRad]));					
+			gen_stats.push_back	(CalculateStats( *bestClusterGen,	gen, c3dRadii[iRad]));			
+						
 			/// Loop over TC-generated C3Ds
 			for(unsigned ic3d=0; ic3d<tcC3Ds[iendcap][iRad].size(); ++ic3d) {
 				/*	TODO:
 				 *		- discard c3d which are not pertinent to the event
 				 *		- Energy calculations
-				 *	*/
+				 */
+				// For each C3D find distance to gen
+					
+				/*
+				C3D_gen_test = geC3D[iendcap][iRad].at(ic3d);
+				C3D_tc_test = tcC3D[iendcap][iRad].at(ic3d); 
+				x_s = C3D_gen_test.xNorm()*C3D_gen_test.xNorm();
+				y_s = C3D_gen_test.yNorm()*C3D_gen_test.yNorm();
 
 				//newC3Ds[iendcap].at(ic3d).setNearestGen( detector.getGenAll() );	
-
+				// Find best c3d to compare with truth! 
+				// Find radial distance to truth... 
+				x_s = tcC3D[iendcap][iRad].at(ic3d).xNorm()   
+				y_s = tcC3D[iendcap][iRad].at(ic3d).yNorm() 
+				*/
 				if (verbose) {
-					cout << "iC3D:"<< ic3d << "\|nC3D:" 
+					cout << "iC3D:"<< ic3d << " out of " 
 						<< tcC3Ds[iendcap][iRad].size() << endl;
 				tcC3Ds[iendcap][iRad].at(ic3d).print();	
 				}	
 			/************* END of polarFWtc routines************/
-
-
-
-
 			}
 
 			// get the TCs
@@ -390,8 +451,15 @@ int main(int argc, char **argv){
 
 		} // END Endcap Loop
 
-		
-		// Fill root variables
+		// Please fill root from here!?
+		//ttcStats->Fill();
+		//tgeStats->Fill();	
+		tStats->Fill();
+
+		gen_stats.clear(); tc_stats.clear();	
+
+
+				// Fill root variables
 //		tNewC3Ds->Fill();
 //		tGenC3Ds->Fill();
 		// Cleanup after root files is filled. 
@@ -400,18 +468,16 @@ int main(int argc, char **argv){
 //		genC3Ds[0].clear();
 //		genC3Ds[1].clear(); 
 
-
 		/* LOOP over generated clusters [Calcs here?] 
 		 *	Also clears the HGCC3D vectors */
-		for (unsigned iendcap=0; iendcap !=2; ++iendcap) {
+		/*for (unsigned iendcap=0; iendcap !=2; ++iendcap) {
 			for (unsigned iRad=0; iRad != nR; ++iRad) {
-
 
 				/// Delete data, at the end of every event loop
 				tcC3Ds[iendcap][iRad].clear();
 				geC3Ds[iendcap][iRad].clear();
 			}
-		} 
+		} */
 
         cout << " MAIN >> finished event " << ievt << endl;
     } // END Event loop
@@ -421,13 +487,13 @@ int main(int argc, char **argv){
 	fileOut->cd("/");
 
 	// Deprecated C3D storage-> perhaps implement for a single radius.
-	tNewC3Ds->Write(); 
-	tGenC3Ds->Write(); 
+	//tNewC3Ds->Write(); 
+	//tGenC3Ds->Write(); 
 
 	// New stats storage to hold resolution imformation 
-	tgeStats->Write();
-	ttcStats->Write(); 
-
+	//tgeStats->Write();
+	//ttcStats->Write(); 
+	tStats->Write();
 //Unused stuff for output
 /*    for(unsigned iendcap=0; iendcap<HGCgeom::instance()->nEndcaps(); iendcap++) {
         for(unsigned isection=0; isection<nLongitudinalSections; isection++) {
