@@ -229,6 +229,7 @@ int main(int argc, char **argv){
 	/* Loop Over Events */
     unsigned totalEvt = detector.getEvents();
     nEvt = (nEvt==-1) ? totalEvt : nEvt;
+	cout << " MAIN << totalEvt "<< totalEvt << "\t events selected " << nEvt << endl;
 
 	/**********************************/
 	/* Output datastructures for C3Ds */
@@ -344,7 +345,6 @@ int main(int argc, char **argv){
 					[gen](HGCC3D& lhs, HGCC3D& rhs) { return getDist(lhs,*gen) < getDist(rhs,*gen);} ) ; 
 
 
-			//Testing
 			if (verbose) {
 				cout << "+++++++++++++++++++++++++++++++++++\n";
 				cout << "TC best cluster; pt:\t"	<< bestClusterTC->Pt()	<< " xNorm/yNorm:  " 
