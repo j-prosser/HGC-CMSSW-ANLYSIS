@@ -37,7 +37,7 @@
 namespace std {} using namespace std;
 
 // Header files passed as explicit arguments
-#include "./inc/HGCC3D.h"
+#include "inc/HGCC3D.h"
 
 // Header files passed via #pragma extra_include
 
@@ -459,7 +459,7 @@ namespace ROOT {
 namespace {
   void TriggerDictionaryInitialization_DictHGCC3D_Impl() {
     static const char* headers[] = {
-"./inc/HGCC3D.h",
+"inc/HGCC3D.h",
 0
     };
     static const char* includePaths[] = {
@@ -475,7 +475,7 @@ namespace {
 extern int __Cling_Autoloading_Map;
 namespace std{template <typename _Tp> class __attribute__((annotate("$clingAutoload$bits/allocator.h")))  __attribute__((annotate("$clingAutoload$string")))  allocator;
 }
-class __attribute__((annotate("$clingAutoload$./inc/HGCC3D.h")))  HGCC3D;
+class __attribute__((annotate("$clingAutoload$inc/HGCC3D.h")))  HGCC3D;
 namespace std{template <typename _Tp> struct __attribute__((annotate("$clingAutoload$bits/stl_function.h")))  __attribute__((annotate("$clingAutoload$string")))  less;
 }
 namespace std{template <class _T1, class _T2> struct __attribute__((annotate("$clingAutoload$bits/stl_pair.h")))  __attribute__((annotate("$clingAutoload$string")))  pair;
@@ -489,7 +489,7 @@ namespace std{template <class _T1, class _T2> struct __attribute__((annotate("$c
 #endif
 
 #define _BACKWARD_BACKWARD_WARNING_H
-#include "./inc/HGCC3D.h"
+#include "inc/HGCC3D.h"
 
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";
