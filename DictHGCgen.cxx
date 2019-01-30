@@ -37,7 +37,7 @@
 namespace std {} using namespace std;
 
 // Header files passed as explicit arguments
-#include "./inc/HGCgen.h"
+#include "inc/HGCgen.h"
 
 // Header files passed via #pragma extra_include
 
@@ -396,12 +396,12 @@ namespace ROOT {
 namespace {
   void TriggerDictionaryInitialization_DictHGCgen_Impl() {
     static const char* headers[] = {
-"./inc/HGCgen.h",
+"inc/HGCgen.h",
 0
     };
     static const char* includePaths[] = {
-"/home/johannes/root/include",
-"/home/johannes/HCA/",
+"/usr/include/root",
+"/home/hep/sak115/HGC/vito-fork/",
 0
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
@@ -410,7 +410,7 @@ namespace {
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 extern int __Cling_Autoloading_Map;
-class __attribute__((annotate("$clingAutoload$./inc/HGCgen.h")))  HGCgen;
+class __attribute__((annotate("$clingAutoload$inc/HGCgen.h")))  HGCgen;
 namespace std{template <typename _Tp> class __attribute__((annotate("$clingAutoload$bits/allocator.h")))  __attribute__((annotate("$clingAutoload$string")))  allocator;
 }
 namespace std{template <typename _Tp> struct __attribute__((annotate("$clingAutoload$bits/stl_function.h")))  __attribute__((annotate("$clingAutoload$string")))  less;
@@ -426,7 +426,7 @@ namespace std{template <class _T1, class _T2> struct __attribute__((annotate("$c
 #endif
 
 #define _BACKWARD_BACKWARD_WARNING_H
-#include "./inc/HGCgen.h"
+#include "inc/HGCgen.h"
 
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";
