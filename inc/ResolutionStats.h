@@ -29,7 +29,9 @@ class ResolutionStats : public TObject {
 		/* set data methods*/
 		void setRadius(float radius); 
 		void setEta(float Eta);
-		void setPtRes(float PtRes); 
+		void setPtGen(float PtGen); 
+		void setPtReco(float PtReco); 
+		void setPtReco_Gen(float PtReco_Gen); 
 		void setXRes(float XRes);
 		void setYRes(float YRes); 
 		void setRRes(float RRes); 
@@ -37,7 +39,9 @@ class ResolutionStats : public TObject {
 		/* get data methods*/
 		float Radius() const;
 		float Eta() const;
-		float PtRes() const;
+		float PtGen() const;
+		float PtReco() const;
+		float PtReco_Gen() const;
 		float XRes() const;
 		float YRes() const; 
 		float RRes() const; 
@@ -49,7 +53,9 @@ class ResolutionStats : public TObject {
 		/* direct */
 		Float_t _radius;
 		Float_t _eta;
-		Float_t _pt_res;
+		Float_t _pt_gen;
+		Float_t _pt_reco;
+		Float_t _pt_reco_gen;
 		Float_t _xnorm_res;
 		Float_t _ynorm_res;
 		Float_t _rnorm_res;
