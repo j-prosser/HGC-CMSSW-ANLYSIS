@@ -17,6 +17,7 @@ float abs_diff_pt(HGCC3D& cluster, HGCgen& truth) {
 ResolutionStats CalculateStats(HGCC3D& cluster, HGCgen* truth, float radius) {
 	ResolutionStats result = ResolutionStats(); 
 	result.setRadius(radius);
+	result.setEta(truth->Eta());
 	// Pt res: Pt^cl / Pt^gen
 	result.setPtRes( cluster.Pt() / truth->Pt() );
 	result.setXRes( cluster.xNorm() - truth->xNorm()  );

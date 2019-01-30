@@ -28,6 +28,7 @@ class ResolutionStats : public TObject {
 
 		/* set data methods*/
 		void setRadius(float radius); 
+		void setEta(float Eta);
 		void setPtRes(float PtRes); 
 		void setXRes(float XRes);
 		void setYRes(float YRes); 
@@ -35,6 +36,7 @@ class ResolutionStats : public TObject {
 
 		/* get data methods*/
 		float Radius() const;
+		float Eta() const;
 		float PtRes() const;
 		float XRes() const;
 		float YRes() const; 
@@ -46,6 +48,7 @@ class ResolutionStats : public TObject {
 	private:
 		/* direct */
 		Float_t _radius;
+		Float_t _eta;
 		Float_t _pt_res;
 		Float_t _xnorm_res;
 		Float_t _ynorm_res;
