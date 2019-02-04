@@ -98,9 +98,9 @@ int main(int argc, char **argv){
 
 	vector<float> c3dRadii;	
 	// Radius increment (step)
-	float incR = 0.05;
+	float incR = 0.02;
 	// Number of radii to be analysed
-	unsigned nR = 2;
+	unsigned nR = 5;
 	// Create vector of radii
 	for (unsigned i=1; i != nR+1; ++i) {c3dRadii.push_back(i*incR);} 
 
