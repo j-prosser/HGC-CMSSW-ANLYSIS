@@ -57,6 +57,8 @@ doublevector cut_by_R_and_Eta(TTree* tree, string pathname, double radius, doubl
 		r_eta_grad_graderr.push_back(histo->GetMean());
 		r_eta_grad_graderr.push_back(histo->GetStdDev());
 
+		/* return a vector or <radius, eta, gradient, stdDev of gradient> */ 
+
 		return r_eta_grad_graderr;
 }
 
@@ -82,6 +84,7 @@ doublevector genEta(double start, double stop, double step, bool bothsides) {
 }	
 
 void printvector(vector<double> v) {
+		/* for debugging */
 		for (unsigned i=0; i<v.size(); i++) {
 				cout << v[i] << " ";
 		}
@@ -89,6 +92,7 @@ void printvector(vector<double> v) {
 }
 
 void printvv(vector<vector<double>> vv) {
+		/* for debugging */
 		for (unsigned i=0; i<vv.size(); i++) {
 				printvector(vv[i]);
 		}
@@ -96,27 +100,30 @@ void printvv(vector<vector<double>> vv) {
 						
 
 int main() {
+
+		/* open input file */
 		TFile *file_0 = new TFile(filepath_0.c_str(), "READ");
 
 		if (file_0->IsOpen()) {
 				cout << "file opened" << endl;
 		}
 
+		/* get the tree from the input file and specify the path of the relevant leaf*/ 
 		TTree *tree = (TTree*) file_0->Get("tstats");
 
 		string path = "tc_clusters._pt_reco_gen";
-		double radius1 = 0.05;
-		double radius2 = 0.1;
 
 		/* Define the list of radii and list of etas */
 
 		double radii [] = {.02, .04, .06, .08, .10};
 		double etas [1000];
-		doublevector _etas = genEta(1.6, 2.8, 0.2, false);
+		doublevector _etas = genEta(1.6, 2.81, 0.2, false); //the bool at the end specifies if one or both endcaps should be evaluated. (false is one). usually better to just do one, since the graph becomes more readable
 		std::copy(_etas.begin(), _etas.end(), etas);
 
 	
 		doublevecvec data; //this is a vector of vectors which contain (radius, eta, gradient mean, gradient sigma)
+
+		/* Loop over the different radii and eta ranges, and extract the data into data */
 
 		for (unsigned i=0; i<sizeof(radii)/sizeof(radii[0]); i++) {
 				for (unsigned j=0; j<_etas.size(); j++) {
@@ -127,15 +134,18 @@ int main() {
 		}
 
 
-		printvv(data);
+		// printvv(data); //for debugging uncomment this line
 		
+		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this */
+
 		TGraph2D *g2 = new TGraph2D(data.size());
 		for (unsigned i=0; i< data.size(); i++) {
 				g2->SetPoint(i, data[i][0], data[i][1], data[i][2]);
 		}
 
+		/* Draw the graph. I should add axis labels and a title here. */
 		TCanvas *c = new TCanvas("x", "x", 600, 600);
-		g2->Draw();
+		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
 
 
 
