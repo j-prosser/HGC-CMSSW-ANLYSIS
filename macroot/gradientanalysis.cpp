@@ -12,7 +12,6 @@
 
 std::string filepath_0 = "testout.root";
 string filepath_1 = "testout_pu.root";
-
 typedef vector<double> doublevector;
 typedef vector<vector<double>> doublevecvec;
 

@@ -1,3 +1,5 @@
+
+
 /*************************************************************************/
 /* TODO:
  *	- Implement a datastructure for the output
@@ -36,7 +38,6 @@
 #include <TList.h>
 #include <TF1.h>
 #include <TLine.h>
-
 /* myIncludes*/
 #include "HGCgeom.h"
 #include "HistoContainer.h"
@@ -96,11 +97,11 @@ int main(int argc, char **argv){
 	/**********************/	
 	/*** Radius options ***/
 
-	vector<float> c3dRadii;	
+    std::vector<Float_t> c3dRadii;	
 	// Radius increment (step)
-	float incR = 0.02;
+	Float_t incR = 0.02;
 	// Number of radii to be analysed
-	unsigned nR = 5;
+	unsigned nR = 10;
 	// Create vector of radii
 	for (unsigned i=1; i != nR+1; ++i) {c3dRadii.push_back(i*incR);} 
 
@@ -133,13 +134,13 @@ int main(int argc, char **argv){
         switch (opt)
         {
         case 'h':
-            cout << "Help" << endl;
-            cout << " -h(--help        ) :\t shows this help" << endl; 
-            cout << " -f(--fileList    ) <files> :\t list of files to be processed" << endl; 
-            cout << " -i(--iFile       ) <ifile> :\t single file input" << endl; 
-            cout << " -o(--oFile       ) <ofile> :\t output file" << endl; 
-            cout << " -d(--firstEvent  ) <firstEvent> :\t first event to be processed (default: 0)" << endl;
-            cout << " -n(--nEvt        ) <nEvt> :\t number of events to be processed (default: all)" << endl;
+           std::cout << "Help" << std::endl;
+           std::cout << " -h(--help        ) :\t shows this help" << std::endl;
+           std::cout << " -f(--fileList    ) <files> :\t list of files to be processed" << std::endl; 
+           std::cout << " -i(--iFile       ) <ifile> :\t single file input" << std::endl; 
+           std::cout << " -o(--oFile       ) <ofile> :\t output file" << std::endl; 
+           std::cout << " -d(--firstEvent  ) <firstEvent> :\t first event to be processed (default: 0)" << std::endl;
+           std::cout << " -n(--nEvt        ) <nEvt> :\t number of events to be processed (default: all)" << std::endl;
             return 0;
             break;
         case 'f':
@@ -148,13 +149,15 @@ int main(int argc, char **argv){
         case 'i':
             inputFileName = optarg;
             break;
-	case 'o':
+        case 'o':
             outputFileName = optarg;
             break;
-	case 'n':
-            nEvt = atoi( optarg );
+        case 'n':
+            // convert to integers...
+            nEvt = atoi( optarg ); 
             break;
         case 'd':
+            // convert to integers...
             firstEvent = atoi( optarg );
             break;
 
@@ -164,12 +167,13 @@ int main(int argc, char **argv){
     }
 
     // Display options
-    cout << "Options "           << endl;
-    cout << "  File List Name: " << fFileListName  << endl;
-    cout << "  firstEvent: "     << firstEvent     << endl;
-    cout << "  nEvts: "          << nEvt           << endl;
-    cout << "  OutputFile: "     << outputFileName << endl;
-    cout << "  InputFile: "      << inputFileName  << endl;
+   std::cout << "Options "           << std::endl;
+   std::cout << "  Verbose: "        << verbose        << std::endl;
+   std::cout << "  File List Name: " << fFileListName  << std::endl;
+   std::cout << "  InputFile: "      << inputFileName  << std::endl;
+   std::cout << "  firstEvent: "     << firstEvent     << std::endl;
+   std::cout << "  nEvts: "          << nEvt           << std::endl;
+   std::cout << "  OutputFile: "     << outputFileName << std::endl;
 
     /****************/
     /* OPEN fileOUT */
@@ -183,8 +187,8 @@ int main(int argc, char **argv){
     TList *fList = new TList();
 
     if( fFileListName != "" ) {
-        ifstream fFileList( fFileListName );    
-        string line;
+        std::ifstream fFileList( fFileListName );    
+        std::string line;
         while( getline( fFileList, line ) ){
             fList->Add( new TObjString( TString(line) ) );
         }
@@ -196,12 +200,12 @@ int main(int argc, char **argv){
 	/**********************/
     /* build the detector */
 
-	cout << " MAIN >> building HGC\n";
+    std::cout << " MAIN >> building HGC\n";
     HGC detector( fList, 
                   flagTCs, flagC2D, flagC3D, flagGen, flagGenPart, 
                   true, HGCverboselevel 
         );   
-    cout << " MAIN >> HGC built\n"; 
+   std::cout << " MAIN >> HGC built\n"; 
     
 	// - Create a class for storing statistics per event + endcap, for every radius 
 	TTree *tStats = new TTree("tstats","tstats"); 	
@@ -217,8 +221,8 @@ int main(int argc, char **argv){
 //		}}
 
 	//No more pre-save sorting!
-	vector<ResolutionStats> gen_stats; 
-	vector<ResolutionStats> tc_stats;
+    std::vector<ResolutionStats> gen_stats; 
+    std::vector<ResolutionStats> tc_stats;
 
 	//Add branches for difference schemes...
 	tStats->Branch( "gen_clusters", &gen_stats, 64000,1);
@@ -229,16 +233,17 @@ int main(int argc, char **argv){
 	/* Loop Over Events */
     unsigned totalEvt = detector.getEvents();
     nEvt = (nEvt==-1) ? totalEvt : nEvt;
-	cout << " MAIN << totalEvt "<< totalEvt << "\t events selected " << nEvt << endl;
+    std::cout << " MAIN << totalEvt "<< totalEvt << "\t events selected " << nEvt << std::endl;
 
 	/**********************************/
 	/* Output datastructures for C3Ds */
-	vector<HGCC3D> tcC3Ds[2][nR];
-	vector<HGCC3D> geC3Ds[2][nR];
+    std::vector<HGCC3D> tcC3Ds[2][nR];
+    std::vector<HGCC3D> geC3Ds[2][nR];
     
 	/// Loop over events
     for( int ievt=firstEvent; ievt<(firstEvent+nEvt); ievt++ ){
-		
+
+
 		/******BUILD DIR HIERARCHY******/
         /* make a directory for this event and the phi sector in iFile
 		 * IF saveEventByEvent flag is set 
@@ -265,13 +270,13 @@ int main(int argc, char **argv){
         }
 
         /* Get Entry */
-        std::cout << " MAIN >> getting event " << ievt << std::endl;
+        std::cout << " MAIN >> getting event " << ievt <<std::endl;
         
 		/// get event into 'detector' 
 		detector.getEvent( ievt );
 
 		/// get truth data (index is endcap) 
-		vector<HGCgen*> gens  = detector.getGenAll();
+        std::vector<HGCgen*> gens  = detector.getGenAll();
 
 		/// endcap loop
         for(unsigned iendcap=0; iendcap<HGCgeom::instance()->nEndcaps(); iendcap++) {
@@ -291,7 +296,7 @@ int main(int argc, char **argv){
 				/*** Loop over R ***/
 				for (unsigned iRad=0; iRad!=c3dRadii.size() ;++iRad) {
 					const float c3dRadius = c3dRadii[iRad];
-					if (verbose) { cout << ">>> iRad:" << iRad <<"\tRad:" << c3dRadius <<" <<<"<< endl;}
+					if (verbose) {std::cout << ">>> iRad:" << iRad <<"\tRad:" << c3dRadius <<" <<<"<< std::endl;}
 		
 					// Bin sizes for eventbyevent histograms.	
 					unsigned binSums[36] = { 
@@ -311,8 +316,8 @@ int main(int argc, char **argv){
 				// Print all found clusters gen method
 				for(unsigned ic3d=0; ic3d<geC3Ds[iendcap][iRad].size(); ++ic3d) {
 						
-				cout << "iC3D:"<< ic3d << "  ngeC3D:" << geC3Ds[iendcap][iRad].size() << endl;
-				geC3Ds[iendcap][iRad].at(ic3d).print();	
+                    std::cout << "iC3D:"<< ic3d << "  ngeC3D:" << geC3Ds[iendcap][iRad].size() << std::endl;
+				    geC3Ds[iendcap][iRad].at(ic3d).print();	
 				}}
 			
 			/*******************************/
@@ -334,7 +339,7 @@ int main(int argc, char **argv){
 			
 			if (verbose) {
 				cout << "********************\n";	
-				cout << "truth info:\t" << gen->Pt() << " "<< gen->xNorm() <<" " << gen->yNorm() <<endl;
+				cout << "truth info:\t" << gen->Pt() << " "<< gen->xNorm() <<" " << gen->yNorm() <<std::endl;
 			}
 
 			// Obtain the closest cluster to truth	
@@ -343,7 +348,6 @@ int main(int argc, char **argv){
 			
 			auto bestClusterGen = min_element(geC3Ds[iendcap][iRad].begin(), geC3Ds[iendcap][iRad].end(), 	
 					[gen](HGCC3D& lhs, HGCC3D& rhs) { return getDist(lhs,*gen) < getDist(rhs,*gen);} ) ; 
-
 
 			if (verbose) {
 				cout << "+++++++++++++++++++++++++++++++++++\n";
@@ -363,8 +367,8 @@ int main(int argc, char **argv){
 			if (verbose) {
 				for(unsigned ic3d=0; ic3d<tcC3Ds[iendcap][iRad].size(); ++ic3d) {
 					
-					cout << "iC3D:"<< ic3d << " out of " 
-						<< tcC3Ds[iendcap][iRad].size() << endl;
+                    std::cout << "iC3D:"<< ic3d << " out of " 
+						<< tcC3Ds[iendcap][iRad].size() << std::endl;
 					tcC3Ds[iendcap][iRad].at(ic3d).print();		
 				}
 			}
@@ -392,7 +396,7 @@ int main(int argc, char **argv){
 			}
 		}
 
-        cout << " MAIN >> finished event " << ievt << endl;
+       std::cout << " MAIN >> finished event " << ievt << std::endl;
     } // END Event loop
 
 
@@ -402,13 +406,13 @@ int main(int argc, char **argv){
 	// New stats storage to hold resolution imformation 
 	tStats->Write();
 
-	cout << " MAIN >>> The loop over events ended. " << endl;
+    std::cout << " MAIN >>> The loop over events ended. " << std::endl;
 
     /* close the out file */
     fileOut->Close();
 
+    std::cout << " MAIN >>> Output file closed." << std::endl;
+
     return 0;
 
 } // End of main
-
-
