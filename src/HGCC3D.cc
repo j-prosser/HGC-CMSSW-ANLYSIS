@@ -1,4 +1,3 @@
-
 /* include the .h */
 #include "HGCC3D.h"
 #include "TMath.h"

@@ -6,6 +6,10 @@
 #include <fstream>
 #include <getopt.h>
 
+// needed for accumulate?
+
+#include <numeric>
+
 /* ROOT */
 #include <TString.h>
 #include <TFile.h>

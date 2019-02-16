@@ -10,7 +10,7 @@
 #include <iostream>
 #include "TH1F.h"
 
-std::string filepath_0 = "testout.root";
+std::string filepath_0 = "pu0_thres.root";
 
 typedef vector<double> doublevector;
 typedef vector<vector<double>> doublevecvec;
@@ -115,7 +115,7 @@ int main() {
 
 		/* Define the list of radii and list of etas */
 
-		double radii [] = {.02, .04, .06, .08, .10};
+		double radii [] = {.02, .04, .06, .08, .10, .12, .14, .16, .18, .20};
 		double etas [1000];
 		doublevector _etas = genEta(1.6, 2.81, 0.2, false); //the bool at the end specifies if one or both endcaps should be evaluated. (false is one). usually better to just do one, since the graph becomes more readable
 		std::copy(_etas.begin(), _etas.end(), etas);

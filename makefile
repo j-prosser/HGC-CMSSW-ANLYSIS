@@ -1,12 +1,13 @@
-empty=
-space= $(empty) $(empty)
 
-empty=
-space= $(empty) $(empty)
 
-# THE compiler
+#clang++ or g++ ? 
+# if OS X Darwin kernel...
+SONAME = -soname
 CXX = g++
-
+ifeq ($(shell uname -s),Darwin)
+	SONAME = -install_name
+	CXX = clang++
+endif
 ####################
 ### useful paths ###
 ####################
@@ -23,8 +24,8 @@ BIN_DIR = ./bin
 LIB_DIR = ./lib
 
 # dictionary dir
+# unused (?) 
 DIC_DIR = ./dic
-
 
 ##########################
 ### flags and libs and INC
@@ -115,11 +116,47 @@ dict: $(DICTS_CXX)
 ##g++ -g $(CXXFLAGS) -c Dict$@.cxx $(SRC_DIR)/$@.cc
 #	g++ -g -Wl,-soname,$(LIB_DIR)/$@.so -shared Dict$@.o $(LIB_DIR)/$@.o -o $(LIB_DIR)/$@.so
 
+
+
+
 $(DICTS_CXX): Dict%.cxx: $(INC_DIR)/%.h $(INC_DIR)/%linkDef.h $(SRC_DIR)/%.cc $(LIB_DIR)/%.o
 	rootcint -f $@ -c $(filter %.h, $^)
-	g++ -g -fPIC $(INC) $(ROOT_CFLAGS) -c $@ $(filter %.cc, $^) 
+# generate the objects (unlinked) 
+	$(CXX) -g -fPIC $(INC) $(ROOT_CFLAGS) -c $@ $(filter %.cc, $^)
+
+#g++ -g -fPIC $(INC) $(ROOT_CFLAGS) -c $@ $(filter %.cc, $^) 
 #g++ -g $(CXXFLAGS) -c Dict$@.cxx $(SRC_DIR)/$@.cc
-	g++ -g -Wl,-soname,$(patsubst $(space)%.o, %.so, $(filter %.o, $^)) -shared $(patsubst %.cxx, %.o, $@) $(filter %.o, $^) -o $(patsubst %.o, %.so, $(filter %.o, $^))
+# replace soname with install_name
+#    $(CXX) -bundle -undefined -dynamic_lookup -fPIC -o $(patsubst $(space)%.o, %.so, $(filter %.o, $^)) $(patsubst %.cxx, %.o, $@) $(filter %.o, $^)  $(patsubst %.o, %.so, $(filter %.o, $^))
+
+# HOW TO MAKE THIS MAKEFILE FUNCTION CORRECTLY ON OS X
+#  USING: https://stackoverflow.com/questions/14173260/creating-shared-libraries-in-c-for-osx
+# 	replace -shared with -dynamicllib
+
+# -c or -Wl ?????????? -Wl doesn't work
+# following command basically is ignored by OS X however doesn't give errors, (because of -c)
+	#$(CXX) -g -c $(SONAME) $(patsubst $(space)%.o, %.so, $(filter %.o, $^)) -shared $(patsubst %.cxx, %.o, $@) $(filter %.o, $^) -o $(patsubst %.o, %.so, $(filter %.o, $^))
+# trying to compile dynamic libraries on OS X, 
+# patsubst := pattern substitute 
+# i.e. patsubst x,y, ab x b xd ( replace all x's with y in whitespace-separated pattern. 
+	
+# WOrking here
+# g++ -dynamiclib -undefined suppress -flat_namespace  $(patsubst %.cxx, %.o, $@) $(filter %.o, $^)  -o something.dylib
+
+# Works?
+#	$(CXX) -dynamiclib -undefined suppress -flat_namespace $(patsubst %.cxx, %.o, $@) $(filter %.o, $^)   -o $(patsubst %.o, %.so, $(filter %.o, $^))
+ifeq ($(shell uname -s),Darwin)
+	$(CXX) -dynamiclib -undefined suppress -flat_namespace $(patsubst %.cxx, %.o, $@) $(filter %.o, $^)   -o $(patsubst %.o, %.dynlib, $(filter %.o, $^))
+else 
+	$(CXX) -g -Wl,-soname,$(patsubst $(space)%.o, %.so, $(filter %.o, $^)) -shared $(patsubst %.cxx, %.o, $@) $(filter %.o, $^) -o $(patsubst %.o, %.so, $(filter %.o, $^))
+endif 
+
+#$(CXX) -g $(SONAME) $(patsubst $(space)%.o, %.dynlib, $(filter %.o, $^)) -dynamiclib $(patsubst %.cxx, %.o, $@) $(filter %.o, $^) -o $(patsubst %.o, %.dynlib, $(filter %.o, $^))
+
+
+#$(CXX) -g -c -Wl -install_name $(patsubst $(space)%.o, %.so, $(filter %.o, $^)) -shared $(patsubst %.cxx, %.o, $@) $(filter %.o, $^) -o $(patsubst %.o, %.so, $(filter %.o, $^))
+
+#g++ -g -Wl,-soname,$(patsubst $(space)%.o, %.so, $(filter %.o, $^)) -shared $(patsubst %.cxx, %.o, $@) $(filter %.o, $^) -o $(patsubst %.o, %.so, $(filter %.o, $^))
 
 echo: 
 #	@echo $(DIC_H)    
