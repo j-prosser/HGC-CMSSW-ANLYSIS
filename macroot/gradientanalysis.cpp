@@ -11,13 +11,29 @@
 #include "TH1F.h"
 
 std::string filepath_0 = "testout.root";
+string filepath_1 = "testout_pu.root";
 
 typedef vector<double> doublevector;
 typedef vector<vector<double>> doublevecvec;
 
+doublevector offset(double PU0_grad, double PU0_std, double PU200_grad, double PU200_std, double Pt_gen) {
+		/* this function takes in the gradients of both the PU0 and the PU200 cases and returns the offset.
+		 * This is preferrable to calcuating the offset for individual events, since it uses the average
+		 * assuming y_pu0 = m*x , y_pu200 = m_1*x , y_pu200_corr = m*x+c, this yields c = x_0 *(m_1 - m) with x_0 = Pt_gen
+		 */
 
+		double offset = Pt_gen * (PU200_grad - PU0_grad);
+		doublevector offset_noerr;
 
-doublevector cut_by_R_and_Eta(TTree* tree, string pathname, double radius, double eta, double halfrange = 0.005, double halfetarange = 0.1) {
+		/* This should be changed to offset_err and the error should be included once calculated */
+
+		offset_noerr.clear();
+		offset_noerr.push_back(offset);
+
+		return offset_noerr;
+}
+
+doublevector cut_by_R_and_Eta(TTree* tree, string pathname, double radius, double eta, double halfrange = 0.005, double halfetarange = 0.05) {
 		double upperLimit = radius + halfrange;
 		double lowerLimit = radius - halfrange;
 
@@ -62,6 +78,88 @@ doublevector cut_by_R_and_Eta(TTree* tree, string pathname, double radius, doubl
 		return r_eta_grad_graderr;
 }
 
+doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, string pathname, double radius, double eta, double halfrange = 0.004, double halfetarange = 0.05) {
+		double upperLimit = radius + halfrange;
+		double lowerLimit = radius - halfrange;
+
+		double upperLimitEta = eta + halfetarange;
+		double lowerLimitEta = eta -halfetarange;
+
+		doublevector r_eta_grad_graderr;
+		doublevector r_eta_grad_graderr_pu;
+		doublevector r_eta_puoffset_offseterr;
+		r_eta_puoffset_offseterr.clear();
+		r_eta_grad_graderr_pu.clear();
+		r_eta_grad_graderr.clear();
+
+		/* Set radius conditions */
+		string condition = to_string(lowerLimit) + " < _radius";
+		string condition2 = "_radius < " + to_string(upperLimit);
+		TCut _condition1 = condition.c_str();
+		TCut _condition2 = condition2.c_str();
+
+		/* Set eta conditions */
+
+		string etacon = to_string(lowerLimitEta) + " < _eta";
+		string etacon2 = "_eta < " + to_string(upperLimitEta);
+		TCut _etacon1 = etacon.c_str();
+		TCut _etacon2 = etacon2.c_str();
+
+
+		//TCanvas *c = new TCanvas(condition.c_str(), condition.c_str(), 600, 600);
+		
+		/* Case PU0 */
+
+		/* get the right leaf, make the cuts and generate the histogram */
+
+		string com = pathname + " >> h";
+		tree_1->Draw(com.c_str(), _condition1 && _condition2 && _etacon1 && _etacon2);
+		TH1 *histo = (TH1*)gPad->GetListOfPrimitives()->FindObject("h");
+
+		/* Push back the variables */
+
+		r_eta_grad_graderr.push_back(radius);
+		r_eta_grad_graderr.push_back(eta);
+		r_eta_grad_graderr.push_back(histo->GetMean());
+		r_eta_grad_graderr.push_back(histo->GetStdDev());
+
+		
+		/* Case PU200 */
+
+		/* get the right leaf, make the cuts and generate the histogram */
+
+		string com2 = pathname + " >> j";
+		tree_2->Draw(com2.c_str(), _condition1 && _condition2 && _etacon1 && _etacon2);
+		TH1 *histo_pu = (TH1*)gPad->GetListOfPrimitives()->FindObject("j");
+
+		/* Push back the variables */
+
+		r_eta_grad_graderr_pu.push_back(radius);
+		r_eta_grad_graderr_pu.push_back(eta);
+		r_eta_grad_graderr_pu.push_back(histo_pu->GetMean());
+		r_eta_grad_graderr_pu.push_back(histo_pu->GetStdDev());
+
+
+
+		/* calculate offset */
+
+		doublevector offsetvec;
+		offsetvec.clear();
+
+		offsetvec = offset( r_eta_grad_graderr.at(2), r_eta_grad_graderr.at(3), r_eta_grad_graderr_pu.at(2), r_eta_grad_graderr_pu.at(3), 25.0);
+
+
+		doublevector r_eta_offset;
+		r_eta_offset.clear();
+		r_eta_offset.push_back(radius);
+		r_eta_offset.push_back(eta);
+		r_eta_offset.push_back(offsetvec.at(0));
+
+		/* return a vector or <radius, eta, gradient, stdDev of gradient> */ 
+
+		return r_eta_offset;
+}
+
 doublevector genEta(double start, double stop, double step, bool bothsides) {
 		int n = (stop-start)/step;
 		if (bothsides) {
@@ -103,21 +201,26 @@ int main() {
 
 		/* open input file */
 		TFile *file_0 = new TFile(filepath_0.c_str(), "READ");
+		TTree *tree = (TTree*) file_0->Get("tstats");
+		TFile *file_1 = new TFile(filepath_1.c_str(), "READ");
 
 		if (file_0->IsOpen()) {
 				cout << "file opened" << endl;
 		}
+		if (file_1->IsOpen()) {
+				cout << "file opened" << endl;
+		}
 
 		/* get the tree from the input file and specify the path of the relevant leaf*/ 
-		TTree *tree = (TTree*) file_0->Get("tstats");
+		TTree *tree1 = (TTree*) file_1->Get("tstats");
 
 		string path = "tc_clusters._pt_reco_gen";
 
 		/* Define the list of radii and list of etas */
 
-		double radii [] = {.02, .04, .06, .08, .10};
+		double radii [] = { 0.008, 0.016, 0.024, 0.032, 0.040, 0.048, 0.056, 0.064, 0.072, 0.080};
 		double etas [1000];
-		doublevector _etas = genEta(1.6, 2.81, 0.2, false); //the bool at the end specifies if one or both endcaps should be evaluated. (false is one). usually better to just do one, since the graph becomes more readable
+		doublevector _etas = genEta(1.65, 2.81, 0.1, false); //the bool at the end specifies if one or both endcaps should be evaluated. (false is one). usually better to just do one, since the graph becomes more readable
 		std::copy(_etas.begin(), _etas.end(), etas);
 
 	
@@ -129,7 +232,7 @@ int main() {
 				for (unsigned j=0; j<_etas.size(); j++) {
 						double radius = radii[i];
 						double eta = etas[j];
-						data.push_back(cut_by_R_and_Eta(tree, path, radius, eta));
+						data.push_back(cut_by_R_and_Eta_compare(tree, tree1, path, radius, eta));
 				}
 		}
 
