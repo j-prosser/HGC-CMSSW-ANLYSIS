@@ -10,6 +10,7 @@
 #include <iostream>
 #include "TH1F.h"
 #include "TCut.h"
+#include "TTree.h"
 
 std::string filepath_0 = "testout.root";
 std::string filepath_1 = "testout_pu.root";
@@ -33,7 +34,7 @@ doublevector offset(double PU0_grad, double PU0_std, double PU200_grad, double P
 		return offset_noerr;
 }
 
-doublevector cut_by_R_and_Eta(TTree* tree, string pathname, double radius, double eta, double halfrange = 0.005, double halfetarange = 0.05) {
+doublevector cut_by_R_and_Eta(TTree* tree, std::string pathname, double radius, double eta, double halfrange = 0.005, double halfetarange = 0.05) {
 		double upperLimit = radius + halfrange;
 		double lowerLimit = radius - halfrange;
 
@@ -44,15 +45,15 @@ doublevector cut_by_R_and_Eta(TTree* tree, string pathname, double radius, doubl
 		r_eta_grad_graderr.clear();
 
 		/* Set radius conditions */
-		string condition = to_string(lowerLimit) + " < _radius";
-		string condition2 = "_radius < " + to_string(upperLimit);
+        std::string condition = std::to_string(lowerLimit) + " < _radius";
+        std::string condition2 = "_radius < " + std::to_string(upperLimit);
 		TCut _condition1 = condition.c_str();
 		TCut _condition2 = condition2.c_str();
 
 		/* Set eta conditions */
 
-		string etacon = to_string(lowerLimitEta) + " < _eta";
-		string etacon2 = "_eta < " + to_string(upperLimitEta);
+		std::string etacon = std::to_string(lowerLimitEta) + " < _eta";
+		std::string etacon2 = "_eta < " + std::to_string(upperLimitEta);
 		TCut _etacon1 = etacon.c_str();
 		TCut _etacon2 = etacon2.c_str();
 
@@ -62,7 +63,7 @@ doublevector cut_by_R_and_Eta(TTree* tree, string pathname, double radius, doubl
 
 		/* get the right leaf, make the cuts and generate the histogram */
 
-		string com = pathname + " >> h";
+		std::string com = pathname + " >> h";
 		tree->Draw(com.c_str(), _condition1 && _condition2 && _etacon1 && _etacon2);
 		TH1 *histo = (TH1*)gPad->GetListOfPrimitives()->FindObject("h");
 
@@ -78,7 +79,7 @@ doublevector cut_by_R_and_Eta(TTree* tree, string pathname, double radius, doubl
 		return r_eta_grad_graderr;
 }
 
-doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, string pathname, double radius, double eta, double halfrange = 0.004, double halfetarange = 0.05) {
+doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, std::string pathname, double radius, double eta, double halfrange = 0.004, double halfetarange = 0.05) {
 		double upperLimit = radius + halfrange;
 		double lowerLimit = radius - halfrange;
 
@@ -93,15 +94,15 @@ doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, string pathn
 		r_eta_grad_graderr.clear();
 
 		/* Set radius conditions */
-		string condition = to_string(lowerLimit) + " < _radius";
-		string condition2 = "_radius < " + to_string(upperLimit);
+		std::string condition = std::to_string(lowerLimit) + " < _radius";
+		std::string condition2 = "_radius < " + std::to_string(upperLimit);
 		TCut _condition1 = condition.c_str();
 		TCut _condition2 = condition2.c_str();
 
 		/* Set eta conditions */
 
-		string etacon = to_string(lowerLimitEta) + " < _eta";
-		string etacon2 = "_eta < " + to_string(upperLimitEta);
+		std::string etacon = std::to_string(lowerLimitEta) + " < _eta";
+		std::string etacon2 = "_eta < " + std::to_string(upperLimitEta);
 		TCut _etacon1 = etacon.c_str();
 		TCut _etacon2 = etacon2.c_str();
 
@@ -112,7 +113,7 @@ doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, string pathn
 
 		/* get the right leaf, make the cuts and generate the histogram */
 
-		string com = pathname + " >> h";
+		std::string com = pathname + " >> h";
 		tree_1->Draw(com.c_str(), _condition1 && _condition2 && _etacon1 && _etacon2);
 		TH1 *histo = (TH1*)gPad->GetListOfPrimitives()->FindObject("h");
 
@@ -128,7 +129,7 @@ doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, string pathn
 
 		/* get the right leaf, make the cuts and generate the histogram */
 
-		string com2 = pathname + " >> j";
+		std::string com2 = pathname + " >> j";
 		tree_2->Draw(com2.c_str(), _condition1 && _condition2 && _etacon1 && _etacon2);
 		TH1 *histo_pu = (TH1*)gPad->GetListOfPrimitives()->FindObject("j");
 
@@ -179,15 +180,15 @@ doublevector genEta(double start, double stop, double step, bool bothsides) {
 		return _etas;
 }	
 
-void printvector(vector<double> v) {
+void printvector(std::vector<double> v) {
 		/* for debugging */
 		for (unsigned i=0; i<v.size(); i++) {
-				cout << v[i] << " ";
+				std::cout << v[i] << " ";
 		}
-		cout << endl;
+		std::cout << std::endl;
 }
 
-void printvv(vector<vector<double>> vv) {
+void printvv(std::vector<std::vector<double>> vv) {
 		/* for debugging */
 		for (unsigned i=0; i<vv.size(); i++) {
 				printvector(vv[i]);
@@ -202,19 +203,19 @@ doublevector generate_radii(unsigned nR, double incR) {
 
 
 int main() {
-        cout << " MAIN: gradientanalysis.cpp" << endl; 
+        std::cout << " MAIN: gradientanalysis.cpp" << std::endl; 
 		/* open input file */
 		TFile *file_0 = new TFile(filepath_0.c_str(), "READ");
 		TFile *file_1 = new TFile(filepath_1.c_str(), "READ");
 
-		if (file_0->IsOpen()) {	cout << " MAIN: file opened:\t" << filepath_0 << endl; }
-		if (file_1->IsOpen()) { cout << " MAIN: file opened:\t" << filepath_1 << endl; }
+		if (file_0->IsOpen()) {	std::cout << " MAIN: file opened:\t" << filepath_0 << std::endl; }
+		if (file_1->IsOpen()) { std::cout << " MAIN: file opened:\t" << filepath_1 << std::endl; }
 
 		/* get the tree from the input file and specify the path of the relevant leaf*/ 
 		TTree *tree1 = (TTree*) file_1->Get("tstats");
 		TTree *tree = (TTree*) file_0->Get("tstats");
 		
-        string path = "tc_clusters._pt_reco_gen";
+        std::string path = "tc_clusters._pt_reco_gen";
 
         doublevector _radii = generate_radii(10,0.02);
 
