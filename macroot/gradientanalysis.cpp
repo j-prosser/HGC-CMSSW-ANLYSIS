@@ -9,11 +9,12 @@
 #include "TCanvas.h"
 #include <iostream>
 #include "TH1F.h"
+#include "TCut.h"
 
 std::string filepath_0 = "testout.root";
-string filepath_1 = "testout_pu.root";
-typedef vector<double> doublevector;
-typedef vector<vector<double>> doublevecvec;
+std::string filepath_1 = "testout_pu.root";
+typedef std::vector<double> doublevector;
+typedef std::vector<std::vector<double>> doublevecvec;
 
 doublevector offset(double PU0_grad, double PU0_std, double PU200_grad, double PU200_std, double Pt_gen) {
 		/* this function takes in the gradients of both the PU0 and the PU200 cases and returns the offset.
@@ -171,10 +172,8 @@ doublevector genEta(double start, double stop, double step, bool bothsides) {
 		
 		while (_eta <=stop) {
 				_etas.push_back(_eta);
-				if (bothsides) {
-						_etas.push_back(-1*_eta);
-				}
-				_eta += step;
+				if (bothsides) { _etas.push_back(-1*_eta); }
+				_eta += step; // increment step
 		}
 
 		return _etas;
@@ -195,38 +194,53 @@ void printvv(vector<vector<double>> vv) {
 		}
 }
 						
+doublevector generate_radii(unsigned nR, double incR) {
+    doublevector radii;
+    for (unsigned i=1; i != nR+1; ++i) {radii.push_back(i*incR);}
+    return radii;
+}
+
 
 int main() {
-
+        cout << " MAIN: gradientanalysis.cpp" << endl; 
 		/* open input file */
 		TFile *file_0 = new TFile(filepath_0.c_str(), "READ");
-		TTree *tree = (TTree*) file_0->Get("tstats");
 		TFile *file_1 = new TFile(filepath_1.c_str(), "READ");
 
-		if (file_0->IsOpen()) {
-				cout << "file opened" << endl;
-		}
-		if (file_1->IsOpen()) {
-				cout << "file opened" << endl;
-		}
+		if (file_0->IsOpen()) {	cout << " MAIN: file opened:\t" << filepath_0 << endl; }
+		if (file_1->IsOpen()) { cout << " MAIN: file opened:\t" << filepath_1 << endl; }
 
 		/* get the tree from the input file and specify the path of the relevant leaf*/ 
 		TTree *tree1 = (TTree*) file_1->Get("tstats");
+		TTree *tree = (TTree*) file_0->Get("tstats");
+		
+        string path = "tc_clusters._pt_reco_gen";
 
-		string path = "tc_clusters._pt_reco_gen";
+        doublevector _radii = generate_radii(10,0.02);
 
 		/* Define the list of radii and list of etas */
+		// radii bins! this is hard-coded and therefore needs to be changed for different input files!
+        double radii[10];
+        std::copy(_radii.begin(), _radii.end(), radii); 
 
-		double radii [] = { 0.008, 0.016, 0.024, 0.032, 0.040, 0.048, 0.056, 0.064, 0.072, 0.080};
-		double etas [1000];
-		doublevector _etas = genEta(1.65, 2.81, 0.1, false); //the bool at the end specifies if one or both endcaps should be evaluated. (false is one). usually better to just do one, since the graph becomes more readable
+        //double radii [] = { 0.008, 0.016, 0.024, 0.032, 0.040, 0.048, 0.056, 0.064, 0.072, 0.080};
+		// 1000? why? 
+        double etas [1000];
+		doublevector _etas = genEta(1.65, 2.81, 0.1, false); 
+        /* the bool at the end specifies if one or both endcaps should be evaluated. (false is one). 
+         * usually better to just do one, since the graph becomes more readable */
 		std::copy(_etas.begin(), _etas.end(), etas);
 
+        // print  to see what was generated
+        std::cout << " MAIN: _radii:\t";
+        printvector(_radii);
+        std::cout << " MAIN: _etas:\t";
+        printvector(_etas);
 	
-		doublevecvec data; //this is a vector of vectors which contain (radius, eta, gradient mean, gradient sigma)
-
-		/* Loop over the different radii and eta ranges, and extract the data into data */
-
+        // Initialised: this is a vector of vectors which contain (radius, eta, gradient mean, gradient sigma)
+		doublevecvec data; 		
+        
+        /* Loop over the different radii and eta ranges, and extract the data into data */
 		for (unsigned i=0; i<sizeof(radii)/sizeof(radii[0]); i++) {
 				for (unsigned j=0; j<_etas.size(); j++) {
 						double radius = radii[i];
