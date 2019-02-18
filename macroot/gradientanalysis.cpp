@@ -275,6 +275,19 @@ doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector
     return _output;
 }
 
+void plot_pu_offset(const doublevecvec& pu_offset_results){
+		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this 
+         * -> Needs Axis labels, title Etc. 
+         *  */
+		TGraph2D *g2 = new TGraph2D(pu_offset_results.size());
+		for (unsigned i=0; i< pu_offset_results.size(); i++) {
+            if (pu_offset_results[i][2] !=0.){ g2->SetPoint(i, pu_offset_results[i][0], pu_offset_results[i][1], pu_offset_results[i][2]);}
+		}
+		/* Draw the graph. I should add axis labels and a title here. */
+		TCanvas *c = new TCanvas("x", "x", 600, 600);
+		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
+}
+
 
 int main() {
         std::cout << " MAIN: gradientanalysis.cpp" << std::endl; 
@@ -297,17 +310,12 @@ int main() {
         double radius_inc = 0.02;
         unsigned radius_n = 10; 
         doublevector _radii = generate_radii(radius_n,radius_inc);
-        double radii[10];
-        std::copy(_radii.begin(), _radii.end(), radii); 
-
-        //double radii [] = { 0.008, 0.016, 0.024, 0.032, 0.040, 0.048, 0.056, 0.064, 0.072, 0.080};
-		// 1000? why? 
-        double etas [1000];
+        
+        // Define eta
         double eta_inc = 0.2;
 		doublevector _etas = genEta(1.65, 2.81, eta_inc, false); 
         /* the bool at the end specifies if one or both endcaps should be evaluated. (false is one). 
          * usually better to just do one, since the graph becomes more readable */
-		std::copy(_etas.begin(), _etas.end(), etas);
 
         // print  to see what was generated
         std::cout << " MAIN: _radii:\t";
@@ -335,29 +343,14 @@ int main() {
             cuts_eta.push_back( tmpcut1 && tmpcut2 );
         }
   
-        
-
-        // output data
+        // Find PU offset for given cuts in R and Eta
         doublevecvec offsetoutput =  compare_pu_effects(tree0,tree1,_radii,_etas,cuts_r, cuts_eta);
-        //hists.push_back(new TH1D(Form("h%d",i),Form("Hist %d",i), 100, 0, 2));
-        //tree->Draw(Form("x>>h%d", i), cuts.at(i));
-           
-        // Initialised: this is a vector of vectors which contain (radius, eta, gradient mean, gradient sigma)
-
         std::cout <<" MAIN: size of offsetoutput vector:\t" << offsetoutput.size() << std::endl; 
         std::cout <<" MAIN: expected size of offsetoutput:\t" << _radii.size() * _etas.size() << std::endl;
         //printvv(offsetoutput); //for debugging uncomment this line
 		
-		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this */
-
-		TGraph2D *g2 = new TGraph2D(offsetoutput.size());
-		for (unsigned i=0; i< offsetoutput.size(); i++) {
-            if (offsetoutput[i][2] !=0.){ g2->SetPoint(i, offsetoutput[i][0], offsetoutput[i][1], offsetoutput[i][2]);}
-		}
-
-		/* Draw the graph. I should add axis labels and a title here. */
-		TCanvas *c = new TCanvas("x", "x", 600, 600);
-		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
+        // plot pu offset results
+        plot_pu_offset(offsetoutput);
 
 
 
