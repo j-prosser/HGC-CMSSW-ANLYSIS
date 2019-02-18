@@ -141,7 +141,10 @@ $(DICTS_CXX): Dict%.cxx: $(INC_DIR)/%.h $(INC_DIR)/%linkDef.h $(SRC_DIR)/%.cc $(
 
 # Works?
 #	$(CXX) -dynamiclib -undefined suppress -flat_namespace $(patsubst %.cxx, %.o, $@) $(filter %.o, $^)   -o $(patsubst %.o, %.so, $(filter %.o, $^))
-	$(CXX) -dynamiclib -undefined suppress -flat_namespace $(patsubst %.cxx, %.o, $@) $(filter %.o, $^)   -o $(patsubst %.o, %.dynlib, $(filter %.o, $^))
+#	$(CXX) -dynamiclib -undefined suppress -flat_namespace $(patsubst %.cxx, %.o, $@) $(filter %.o, $^)   -o $(patsubst %.o, %.dynlib, $(filter %.o, $^))
+
+
+	$(CXX) -dynamiclib -undefined suppress -flat_namespace $(patsubst %.cxx, %.o, $@) $(filter %.o, $^)   -o $(patsubst %.o, %.so, $(filter %.o, $^))
 
 #$(CXX) -g $(SONAME) $(patsubst $(space)%.o, %.dynlib, $(filter %.o, $^)) -dynamiclib $(patsubst %.cxx, %.o, $@) $(filter %.o, $^) -o $(patsubst %.o, %.dynlib, $(filter %.o, $^))
 
