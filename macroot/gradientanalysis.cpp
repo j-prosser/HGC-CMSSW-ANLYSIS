@@ -11,11 +11,21 @@
 #include "TH1F.h"
 #include "TCut.h"
 #include "TTree.h"
+#include "TString.h"
 
 std::string filepath_0 = "testout.root";
 std::string filepath_1 = "testout_pu.root";
 typedef std::vector<double> doublevector;
 typedef std::vector<std::vector<double>> doublevecvec;
+
+void printvector(doublevector v) {
+		/* for debugging */
+		for (unsigned i=0; i<v.size(); i++) {
+				std::cout << v[i] << " ";
+		}
+		std::cout << std::endl;
+}
+
 
 doublevector offset(double PU0_grad, double PU0_std, double PU200_grad, double PU200_std, double Pt_gen) {
 		/* this function takes in the gradients of both the PU0 and the PU200 cases and returns the offset.
@@ -79,14 +89,20 @@ doublevector cut_by_R_and_Eta(TTree* tree, std::string pathname, double radius, 
 		return r_eta_grad_graderr;
 }
 
+/*generates pu offset*/
 doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, std::string pathname, double radius, double eta, double halfrange = 0.004, double halfetarange = 0.05) {
-		double upperLimit = radius + halfrange;
+		
+    
+        double upperLimit = radius + halfrange;
 		double lowerLimit = radius - halfrange;
 
 		double upperLimitEta = eta + halfetarange;
-		double lowerLimitEta = eta -halfetarange;
+		double lowerLimitEta = eta - halfetarange;
 
-		doublevector r_eta_grad_graderr;
+        std::cout << " COMPARE: radius, eta bins:\t" << lowerLimit << "/" << upperLimit 
+            << ",\t" << lowerLimitEta << "/" << upperLimitEta << std::endl;
+		
+        doublevector r_eta_grad_graderr;
 		doublevector r_eta_grad_graderr_pu;
 		doublevector r_eta_puoffset_offseterr;
 		r_eta_puoffset_offseterr.clear();
@@ -102,10 +118,11 @@ doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, std::string 
 		/* Set eta conditions */
 
 		std::string etacon = std::to_string(lowerLimitEta) + " < _eta";
-		std::string etacon2 = "_eta < " + std::to_string(upperLimitEta);
+		std::string etacon2 = "abs(_eta) < " + std::to_string(upperLimitEta);
 		TCut _etacon1 = etacon.c_str();
 		TCut _etacon2 = etacon2.c_str();
 
+        //std::cout << " COMPARE: cut conditions radius, eta:\t" << condition << "/" << condition2 << "\t" << etacon << "/"<< etacon2 << std::endl;
 
 		//TCanvas *c = new TCanvas(condition.c_str(), condition.c_str(), 600, 600);
 		
@@ -140,6 +157,9 @@ doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, std::string 
 		r_eta_grad_graderr_pu.push_back(histo_pu->GetMean());
 		r_eta_grad_graderr_pu.push_back(histo_pu->GetStdDev());
 
+        //Debug
+        std::cout << " COMPARE:\t"; 
+        printvector(r_eta_grad_graderr_pu); 
 
 
 		/* calculate offset */
@@ -149,6 +169,10 @@ doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, std::string 
 
 		offsetvec = offset( r_eta_grad_graderr.at(2), r_eta_grad_graderr.at(3), r_eta_grad_graderr_pu.at(2), r_eta_grad_graderr_pu.at(3), 25.0);
 
+        // Discard points on R,eta plane if not enough values to generate a gradient 
+        if (r_eta_grad_graderr.at(2) == 0. || r_eta_grad_graderr_pu.at(2) ==0.) {
+            offsetvec.at(0) = 0.;
+        }
 
 		doublevector r_eta_offset;
 		r_eta_offset.clear();
@@ -179,15 +203,6 @@ doublevector genEta(double start, double stop, double step, bool bothsides) {
 
 		return _etas;
 }	
-
-void printvector(std::vector<double> v) {
-		/* for debugging */
-		for (unsigned i=0; i<v.size(); i++) {
-				std::cout << v[i] << " ";
-		}
-		std::cout << std::endl;
-}
-
 void printvv(std::vector<std::vector<double>> vv) {
 		/* for debugging */
 		for (unsigned i=0; i<vv.size(); i++) {
@@ -213,21 +228,24 @@ int main() {
 
 		/* get the tree from the input file and specify the path of the relevant leaf*/ 
 		TTree *tree1 = (TTree*) file_1->Get("tstats");
-		TTree *tree = (TTree*) file_0->Get("tstats");
+		TTree *tree0 = (TTree*) file_0->Get("tstats");
 		
         std::string path = "tc_clusters._pt_reco_gen";
-
-        doublevector _radii = generate_radii(10,0.02);
+        TString tpath = "tc_clusters._pt_reco_gen";
 
 		/* Define the list of radii and list of etas */
-		// radii bins! this is hard-coded and therefore needs to be changed for different input files!
+        // Hard coded variables :(
+        double radius_inc = 0.02;
+        unsigned radius_n = 10; 
+        doublevector _radii = generate_radii(radius_n,radius_inc);
         double radii[10];
         std::copy(_radii.begin(), _radii.end(), radii); 
 
         //double radii [] = { 0.008, 0.016, 0.024, 0.032, 0.040, 0.048, 0.056, 0.064, 0.072, 0.080};
 		// 1000? why? 
         double etas [1000];
-		doublevector _etas = genEta(1.65, 2.81, 0.1, false); 
+        double eta_inc = 0.2;
+		doublevector _etas = genEta(1.65, 2.81, eta_inc, false); 
         /* the bool at the end specifies if one or both endcaps should be evaluated. (false is one). 
          * usually better to just do one, since the graph becomes more readable */
 		std::copy(_etas.begin(), _etas.end(), etas);
@@ -238,26 +256,108 @@ int main() {
         std::cout << " MAIN: _etas:\t";
         printvector(_etas);
 	
+        // Generate vectors of TCuts
+        std::vector<TCut> cuts_r;
+        for (unsigned i=0; i<radius_n; ++i){
+            std::string tmp1= "_radius > " + std::to_string(_radii[i]-radius_inc/2.);
+            std::string tmp2= "_radius < " + std::to_string(_radii[i]+ (radius_inc/2.));         
+            TCut tmpcut1 = tmp1.c_str();
+            TCut tmpcut2 = tmp2.c_str();
+            std::cout << tmp1 << tmp2<<std::endl;
+            cuts_r.push_back( tmpcut1 && tmpcut2 );
+        }
+        std::vector<TCut> cuts_eta; 
+        for (unsigned j=0; j<_etas.size(); ++j){
+            std::string tmp1= "abs(_eta) > " + std::to_string(_etas[j]-eta_inc/2.);
+            std::string tmp2= "abs(_eta) < "+std::to_string( _etas[j] + (eta_inc/2.));         
+            TCut tmpcut1 = tmp1.c_str();
+            TCut tmpcut2 = tmp2.c_str();
+            std::cout << tmp1 << tmp2<<std::endl;
+            cuts_eta.push_back( tmpcut1 && tmpcut2 );
+        }
+       
+        // output data
+        doublevecvec output; 
+
+        //std::cout << " MAIN: DEBUG:\n" << _radii.size() << " " << _etas.size() << "\n" << cuts_r.size()<< " " << cuts_eta.size() << std::endl;
+        // init hists
+        std::vector< TH1* > hists0;
+        std::vector< TH1* > hists1;
+
+        //Create a canvas
+        TCanvas *c_all = new TCanvas("c","");
+        c_all->DivideSquare(2*_etas.size()*_radii.size()); 
+        unsigned h_count =1;
+
+        for (unsigned i=0; i<_radii.size(); ++i) {
+            for (unsigned j=0; j<_etas.size(); ++j){
+                //hists.push_back( new TH1D( Form("h_r%deta%d", _radii[i],_etas[j]), Form("Hist radius %d eta %d",_radii[i],_etas[j])))
+                std::cout << " MAIN: yoyo: " << _radii[i] << "\t" << _etas[j] << "\n";
+
+                c_all->cd(h_count);
+                TCut all_cuts = cuts_r[i] && cuts_eta[j];
+
+                // file0
+                std::string histname0 = "0file" + std::to_string(i) + std::to_string(j);
+                std::string comm0 = path +" >> "+ histname0;
+  
+                tree0->Draw(comm0.c_str(),all_cuts);
+                TH1 *histotmp0 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname0.c_str());  
+                hists1.push_back(histotmp0);
+                h_count +=1;
+
+                
+                // file1
+                std::string histname1 = "1file" + std::to_string(i) + std::to_string(j);
+                std::string comm1 = path +" >> "+ histname1;
+
+                tree1->Draw(comm1.c_str(),all_cuts);
+                TH1 *histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());  
+                hists1.push_back(histotmp1);
+                h_count +=1; 
+
+                /*offset calcs + decisions*/
+
+                // if either mean is zero, discard!
+                if (histotmp0->GetMean() == 0. || histotmp1->GetMean() == 0.  ) {
+                    std::cout << "\tDISCARD\n";
+                } else {
+                    // now we can do something!
+                    doublevector offset_vec = offset(histotmp0->GetMean(), histotmp0->GetStdDev(), histotmp1->GetMean(), histotmp0->GetStdDev(), 25.0);
+                    std::cout << "\t\t" << offset_vec[0]<< std::endl;
+                }
+
+                //output.push_back()
+                //test
+                //std::cout << "is hist?: "<< (TH1*)gPad->GetListOfPrimitives()->FindObject(histname.c_str()) << std::endl;
+            }}
+        //hists.push_back(new TH1D(Form("h%d",i),Form("Hist %d",i), 100, 0, 2));
+        //tree->Draw(Form("x>>h%d", i), cuts.at(i));
+           
         // Initialised: this is a vector of vectors which contain (radius, eta, gradient mean, gradient sigma)
 		doublevecvec data; 		
         
         /* Loop over the different radii and eta ranges, and extract the data into data */
-		for (unsigned i=0; i<sizeof(radii)/sizeof(radii[0]); i++) {
+
+        // REMOVED sizeof(r)/sizeof(r[0]), dont make things complicated! 
+        //std::cout <<" MAIN: TEST: " << sizeof(radii) << "\t" << sizeof(radii[0]) << std::endl;
+		for (unsigned i=0; i<radius_n; i++) {
 				for (unsigned j=0; j<_etas.size(); j++) {
 						double radius = radii[i];
 						double eta = etas[j];
-						data.push_back(cut_by_R_and_Eta_compare(tree, tree1, path, radius, eta));
+						data.push_back(cut_by_R_and_Eta_compare(tree0, tree1, path, radius, eta, radius_inc/2.));
 				}
 		}
 
 
-		// printvv(data); //for debugging uncomment this line
+        std::cout <<"MAIN: size of data vector:\t" << data.size() << std::endl; 
+		printvv(data); //for debugging uncomment this line
 		
 		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this */
 
 		TGraph2D *g2 = new TGraph2D(data.size());
 		for (unsigned i=0; i< data.size(); i++) {
-				g2->SetPoint(i, data[i][0], data[i][1], data[i][2]);
+            if (data[i][2] !=0.){ g2->SetPoint(i, data[i][0], data[i][1], data[i][2]);}
 		}
 
 		/* Draw the graph. I should add axis labels and a title here. */
