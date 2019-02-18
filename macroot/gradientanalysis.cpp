@@ -322,7 +322,7 @@ int main() {
             std::string tmp2= "_radius < " + std::to_string(_radii[i]+ (radius_inc/2.));         
             TCut tmpcut1 = tmp1.c_str();
             TCut tmpcut2 = tmp2.c_str();
-            std::cout << tmp1 << tmp2<<std::endl;
+            //std::cout << tmp1 << tmp2<<std::endl;
             cuts_r.push_back( tmpcut1 && tmpcut2 );
         }
         std::vector<TCut> cuts_eta; 
@@ -331,7 +331,7 @@ int main() {
             std::string tmp2= "abs(_eta) < "+std::to_string( _etas[j] + (eta_inc/2.));         
             TCut tmpcut1 = tmp1.c_str();
             TCut tmpcut2 = tmp2.c_str();
-            std::cout << tmp1 << tmp2<<std::endl;
+            //std::cout << tmp1 << tmp2<<std::endl;
             cuts_eta.push_back( tmpcut1 && tmpcut2 );
         }
   
@@ -344,8 +344,9 @@ int main() {
            
         // Initialised: this is a vector of vectors which contain (radius, eta, gradient mean, gradient sigma)
 
-        std::cout <<"MAIN: size of offsetoutput vector:\t" << offsetoutput.size() << std::endl; 
-		printvv(offsetoutput); //for debugging uncomment this line
+        std::cout <<" MAIN: size of offsetoutput vector:\t" << offsetoutput.size() << std::endl; 
+        std::cout <<" MAIN: expected size of offsetoutput:\t" << _radii.size() * _etas.size() << std::endl;
+        //printvv(offsetoutput); //for debugging uncomment this line
 		
 		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this */
 
