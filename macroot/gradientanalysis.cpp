@@ -216,7 +216,7 @@ doublevector generate_radii(unsigned nR, double incR) {
     return radii;
 }
 
-doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector& radii, const doublevector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta) {
+doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector& radii, const doublevector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta, std::string path) {
     doublevecvec _output; 
     
     // init hists
@@ -235,7 +235,7 @@ doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector
 
             // file0
             std::string histname0 = "0file" + std::to_string(i) + std::to_string(j);
-            std::string comm0 = "tc_clusters._pt_reco_gen >> "+ histname0;
+            std::string comm0 = path + " >> "+ histname0;
 
             tree_0->Draw(comm0.c_str(),all_cuts);
             TH1 *histotmp0 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname0.c_str());  
@@ -245,7 +245,7 @@ doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector
                 
             // file1
             std::string histname1 = "1file" + std::to_string(i) + std::to_string(j);
-            std::string comm1 = "tc_clusters._pt_reco_gen >> "+ histname1;
+            std::string comm1 = path + " >> "+ histname1;
 
             tree_pu->Draw(comm1.c_str(),all_cuts);
             TH1 *histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());  
@@ -303,7 +303,6 @@ int main() {
 		TTree *tree0 = (TTree*) file_0->Get("tstats");
 		
         std::string path = "tc_clusters._pt_reco_gen";
-        TString tpath = "tc_clusters._pt_reco_gen";
 
 		/* Define the list of radii and list of etas */
         // Hard coded variables :(
@@ -344,7 +343,7 @@ int main() {
         }
   
         // Find PU offset for given cuts in R and Eta
-        doublevecvec offsetoutput =  compare_pu_effects(tree0,tree1,_radii,_etas,cuts_r, cuts_eta);
+        doublevecvec offsetoutput =  compare_pu_effects(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, path);
         std::cout <<" MAIN: size of offsetoutput vector:\t" << offsetoutput.size() << std::endl; 
         std::cout <<" MAIN: expected size of offsetoutput:\t" << _radii.size() * _etas.size() << std::endl;
         //printvv(offsetoutput); //for debugging uncomment this line
