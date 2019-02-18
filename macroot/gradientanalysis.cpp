@@ -216,7 +216,7 @@ doublevector generate_radii(unsigned nR, double incR) {
     return radii;
 }
 
-doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector& radii, const doublevector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta, std::string path) {
+doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector& radii, const doublevector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta, std::string path, double gen_pt) {
     doublevecvec _output; 
     
     // init hists
@@ -259,7 +259,7 @@ doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector
                  std::cout << " OFFSETCAlC:\tRadius/Eta"<< radii[i]<<"/"<<etas[j] <<"\tDISCARD\n";
             } else {
                 // now we can do something!
-                doublevector offset_vec = offset(histotmp0->GetMean(), histotmp0->GetStdDev(), histotmp1->GetMean(), histotmp0->GetStdDev(), 25.0);
+                doublevector offset_vec = offset(histotmp0->GetMean(), histotmp0->GetStdDev(), histotmp1->GetMean(), histotmp0->GetStdDev(), gen_pt);
                 doublevector tmpout;
                 tmpout.push_back(radii[i]);
                 tmpout.push_back(etas[j]);
@@ -288,6 +288,13 @@ void plot_pu_offset(const doublevecvec& pu_offset_results){
 		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
 }
 
+void resolution_corrected(const doublevecvec& pu_offsets, TTree* tree_pu, std::string path){
+    // obtain corrected resolution given the PU offsets
+    
+    // loop over all entires of pt_reco
+    
+}
+
 
 int main() {
         std::cout << " MAIN: gradientanalysis.cpp" << std::endl; 
@@ -303,6 +310,9 @@ int main() {
 		TTree *tree0 = (TTree*) file_0->Get("tstats");
 		
         std::string path = "tc_clusters._pt_reco_gen";
+
+        // gen_pt! hard coded!
+        double gen_pt = 25.0; 
 
 		/* Define the list of radii and list of etas */
         // Hard coded variables :(
@@ -343,7 +353,7 @@ int main() {
         }
   
         // Find PU offset for given cuts in R and Eta
-        doublevecvec offsetoutput =  compare_pu_effects(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, path);
+        doublevecvec offsetoutput =  compare_pu_effects(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, path, gen_pt);
         std::cout <<" MAIN: size of offsetoutput vector:\t" << offsetoutput.size() << std::endl; 
         std::cout <<" MAIN: expected size of offsetoutput:\t" << _radii.size() * _etas.size() << std::endl;
         //printvv(offsetoutput); //for debugging uncomment this line
