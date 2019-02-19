@@ -16,8 +16,8 @@
 #include "TTreeReader.h"
 #include "TTreeReaderArray.h"
 
-std::string filepath_0 = "testout.root";
-std::string filepath_1 = "testout_pu.root";
+std::string filepath_0 = "new_run_r.root";
+std::string filepath_1 = "new_run_r_pu.root";
 typedef std::vector<float> floatvector;
 typedef std::vector<std::vector<float>> floatvecvec;
 typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
@@ -476,7 +476,7 @@ floatvecvec split2d_1d_by_eta(floatvecvec input) {
 
 		float test_eta = input[0][2];
 
-		return tmpline
+		return tmpline;
 
 }
 
@@ -504,8 +504,8 @@ int main() {
 
 		/* Define the list of radii and list of etas */
         // Hard coded variables :(
-        float radius_inc = 0.02;
-        unsigned radius_n = 10; 
+        float radius_inc = 0.005;
+        unsigned radius_n = 15; 
         floatvector _radii = generate_radii(radius_n,radius_inc);
         
         // Define eta
