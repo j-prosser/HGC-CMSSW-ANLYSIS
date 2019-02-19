@@ -107,8 +107,8 @@ int main(int argc, char **argv){
 
 	
 	// Command Line Output Options
-	bool verbose = true;
-	bool saveEventByEvent=true; 
+	bool verbose = false;
+	bool saveEventByEvent=false; 
 
 	/****************************/
 	/*** Command line options ***/
