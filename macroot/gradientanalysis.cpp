@@ -300,7 +300,6 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 
             c_all->cd(h_count);
             TCut all_cuts = cuts_r[i] && cuts_eta[j];
-			cout << h_count << endl;
 
             // file0 : zero pu
             std::string histname0 = "0file" + std::to_string(i) + std::to_string(j);
@@ -485,28 +484,35 @@ floatvecvecvec split2d_1d_by_eta(floatvecvec input, floatvector _etas) {
 			
 			tmpline.push_back(x);
 			tmpline.push_back(y);
-			printvv(tmpline);
-			tmpline.clear();
 			lines.push_back(tmpline);
 
+			x.clear();
+			y.clear();
+			tmpline.clear();
 		}		
 
-
-		
 		return lines;
-
-		
-
-
 }
 
-void plotLines(floatvecvecvec lines) {
-		TCanvas *c_l = new TCanvas("C_l", "a", 700, 700);
+int min(const float *a, int n) {
+		float miny = a[0];
+		int loc = 0;
+		for (int i =0; i<n; i++) {
+				if (miny > a[i]) {
+						miny = a[i];
+						loc = i;
+				}
+		}
+		return loc;
+}
+
+floatvecvec plotLines(floatvecvecvec lines, floatvector etas) {
+		TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
 		c_l->SetGrid();
 		TMultiGraph *mg = new TMultiGraph();
 
-		cout << "EBUG: GOTTHERE" << endl;
-		cout << lines.size() << endl;
+		floatvecvec minimas_res_r_etas;
+
 		for (unsigned i=0; i<lines.size(); i++) {
 				floatvecvec line = lines[i];
 				int n = line[0].size();
@@ -516,15 +522,44 @@ void plotLines(floatvecvecvec lines) {
 				copy(line[0].begin(), line[0].end(), x);
 				copy(line[1].begin(), line[1].end(), y);
 
+				floatvector minimas = {y[min(y, n)], x[min(y,n)], etas[i]};
+				minimas_res_r_etas.push_back(minimas);
+
 				TGraph *tmpgraph = new TGraph(n, x, y);
-				tmpgraph->SetLineColor(i);
+				tmpgraph->SetLineColor(5*i);
 				mg->Add(tmpgraph);
 		}
+		mg->GetXaxis()->SetTitle("Radius (reduced coordinates)");
+		mg->GetYaxis()->SetTitle("Sigma_E/E");
 		mg->Draw("ac*");
+
+		return minimas_res_r_etas;
 }	
 		
+void plotMinimas(floatvecvec minimas) {
+		int n = minimas.size();
+		float etas [n];
+		float radii [n];
+		float res [n];
+		for (unsigned i=0; i<minimas.size(); i++) {
+				etas[i] = minimas[i][2];
+				radii[i] = minimas[i][1];
+				res[i] = minimas[i][0];
+		}
 
+		TCanvas *c_m_1 = new TCanvas("Best Resolution by Eta", "Best Resolution by Eta", 700, 700);
 
+		TGraph *g1 = new TGraph(n, etas, res);
+		g1->GetXaxis()->SetTitle("Eta");
+		g1->GetYaxis()->SetTitle("Best SigmaE/E");
+		g1->Draw("ac*");
+
+		TCanvas *c_m_2 = new TCanvas("Best Radius by Eta", "Best Radius by Eta", 700, 700);
+		TGraph *g2 = new TGraph(n, etas, radii);
+		g2->GetXaxis()->SetTitle("Eta");
+		g2->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
+		g2->Draw("ac*");
+}
 
 int main() {
         std::cout << " MAIN: gradientanalysis.cpp" << std::endl; 
@@ -610,13 +645,12 @@ int main() {
 		
 
 		floatvecvec Sigma_over_mean_by_r_eta = all_results[2];
-		//plot_pu_offset(Sigma_over_mean_by_r_eta);
+		plot_pu_offset(Sigma_over_mean_by_r_eta);
 
-		cout << 8;
 		floatvecvecvec lines = split2d_1d_by_eta(Sigma_over_mean_by_r_eta, _etas);
 
-		cout << "BEGUF: dnska" << endl;
-		plotLines(lines);
+		floatvecvec minimas = plotLines(lines, _etas);
         
 
+		plotMinimas(minimas);
 }
