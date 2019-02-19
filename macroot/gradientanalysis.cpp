@@ -295,21 +295,20 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
             c_all->cd(h_count);
             TCut all_cuts = cuts_r[i] && cuts_eta[j];
 
-            // file0
+            // file0 : zero pu
             std::string histname0 = "0file" + std::to_string(i) + std::to_string(j);
-            std::string comm0 = path + " >> "+ histname0;
+            std::string pt_reco_gen_path_0 = path + "_pt_reco_gen" + " >> "+ histname0;
 
-            tree_0->Draw(comm0.c_str(),all_cuts);
+            tree_0->Draw(pt_reco_gen_path_0.c_str(),all_cuts);
             TH1 *histotmp0 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname0.c_str());  
             hists1.push_back(histotmp0);
             h_count +=1;
-
                 
             // file1
             std::string histname1 = "1file" + std::to_string(i) + std::to_string(j);
-            std::string comm1 = path + " >> "+ histname1;
+            std::string pt_reco_gen_path_200 = path + "_pt_reco_gen" + " >> "+ histname1;
 
-            tree_pu->Draw(comm1.c_str(),all_cuts);
+            tree_pu->Draw(pt_reco_gen_path_200.c_str(),all_cuts);
             TH1 *histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());  
             hists1.push_back(histotmp1);
             h_count +=1; 
@@ -475,9 +474,13 @@ int main() {
 		
         // plot pu offset results
         plot_pu_offset(offsetoutput);
-            
-        std::string pt_reco_path = "tc_clusters.";
-        resolution_corrected(offsetoutput,file_1,pt_reco_path, _radii, _etas, eta_inc);
+        
+        std::string base_path = "tc_clusters.";
+
+        resolution_width(tree0, tree1, _radii, _etas, cuts_r, cuts_eta, base_path, gen_pt);
+
+        //std::string pt_reco_path = "tc_clusters.";
+        //resolution_corrected(offsetoutput,file_1,pt_reco_path, _radii, _etas, eta_inc);
         
 
 }
