@@ -315,12 +315,12 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
 
 			/* Variables for resolution calc */
 
-			double offset_value;
-			double Pt_reco_mean;
-			double Pt_reco_stdev;
-			double gradient_PU0;
-			double Pt_reco_PUcorrected_mean;
-			double Pt_reco_PUcorrected_stdev;
+			float offset_value;
+			float Pt_reco_mean;
+			float Pt_reco_stdev;
+			float gradient_PU0;
+			float Pt_reco_PUcorrected_mean;
+			float Pt_reco_PUcorrected_stdev;
 
 
 
