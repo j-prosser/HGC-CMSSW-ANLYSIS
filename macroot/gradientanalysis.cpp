@@ -278,6 +278,63 @@ floatvecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const floatvector& 
     return _output;
 }
 
+void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, const floatvector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta, std::string path, float gen_pt) {
+    floatvecvec _output; 
+    
+    // init hists
+    std::vector< TH1* > hists0;
+    std::vector< TH1* > hists1;
+    //Create a canvas
+    TCanvas *c_all = new TCanvas("c","");
+    c_all->DivideSquare(2*etas.size()*radii.size()); 
+    unsigned h_count =1;
+
+    for (unsigned i=0; i<radii.size(); ++i) {
+        for (unsigned j=0; j<etas.size(); ++j){
+
+            c_all->cd(h_count);
+            TCut all_cuts = cuts_r[i] && cuts_eta[j];
+
+            // file0
+            std::string histname0 = "0file" + std::to_string(i) + std::to_string(j);
+            std::string comm0 = path + " >> "+ histname0;
+
+            tree_0->Draw(comm0.c_str(),all_cuts);
+            TH1 *histotmp0 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname0.c_str());  
+            hists1.push_back(histotmp0);
+            h_count +=1;
+
+                
+            // file1
+            std::string histname1 = "1file" + std::to_string(i) + std::to_string(j);
+            std::string comm1 = path + " >> "+ histname1;
+
+            tree_pu->Draw(comm1.c_str(),all_cuts);
+            TH1 *histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());  
+            hists1.push_back(histotmp1);
+            h_count +=1; 
+
+            /*offset calcs + decisions*/
+
+            // if either mean is zero, discard!
+            if (histotmp0->GetMean() == 0. || histotmp1->GetMean() == 0.  ) {
+                 std::cout << " OFFSETCAlC:\tRadius/Eta"<< radii[i]<<"/"<<etas[j] <<"\tDISCARD\n";
+            } else {
+                // now we can do something!
+                floatvector offset_vec = offset(histotmp0->GetMean(), histotmp0->GetStdDev(), histotmp1->GetMean(), histotmp0->GetStdDev(), gen_pt);
+                floatvector tmpout;
+                tmpout.push_back(radii[i]);
+                tmpout.push_back(etas[j]);
+                tmpout.push_back(offset_vec[0]);
+                _output.push_back(tmpout);         
+                //std::cout << "\t\t" << offset_vec[0]<< std::endl;
+            }
+
+
+        // End of eta /R loops
+        }}
+    
+}
 void plot_pu_offset(const floatvecvec& pu_offset_results){
 		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this 
          * -> Needs Axis labels, title Etc. 
