@@ -99,9 +99,9 @@ int main(int argc, char **argv){
 
     std::vector<Float_t> c3dRadii;	
 	// Radius increment (step)
-	Float_t incR = 0.02;
+	Float_t incR = 0.005;
 	// Number of radii to be analysed
-	unsigned nR = 10;
+	unsigned nR = 15;
 	// Create vector of radii
 	for (unsigned i=1; i != nR+1; ++i) {c3dRadii.push_back(i*incR);} 
 
