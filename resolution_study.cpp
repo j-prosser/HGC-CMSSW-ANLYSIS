@@ -99,7 +99,7 @@ int main(int argc, char **argv){
 
     std::vector<Float_t> c3dRadii;	
 	// Radius increment (step)
-	Float_t incR = 0.005;
+	Float_t incR = 0.0075;
 	// Number of radii to be analysed
 	unsigned nR = 15;
 	// Create vector of radii
@@ -107,8 +107,8 @@ int main(int argc, char **argv){
 
 	
 	// Command Line Output Options
-	bool verbose = false;
-	bool saveEventByEvent=false; 
+	bool verbose = true;
+	bool saveEventByEvent=true; 
 
 	/****************************/
 	/*** Command line options ***/
@@ -349,10 +349,18 @@ int main(int argc, char **argv){
 			auto bestClusterGen = min_element(geC3Ds[iendcap][iRad].begin(), geC3Ds[iendcap][iRad].end(), 	
 					[gen](HGCC3D& lhs, HGCC3D& rhs) { return getDist(lhs,*gen) < getDist(rhs,*gen);} ) ; 
 
-			if (verbose) {
+            if (bestClusterGen == geC3Ds[iendcap][iRad].end() || bestClusterTC == tcC3Ds[iendcap][iRad].end() )
+                {
+                    cout << "Best cluster FAILED!"  << endl;
+                    continue;
+                }
+
+            
+            if (verbose) {
 				cout << "+++++++++++++++++++++++++++++++++++\n";
 				cout << "TC best cluster; pt:\t"	<< bestClusterTC->Pt()	<< " xNorm/yNorm:  " 
 					<< bestClusterTC->xNorm()	<< "/" << bestClusterTC->yNorm()	<< "\n";
+
 				cout << "Gen best cluster; pt:\t"	<< bestClusterGen->Pt() << " xNorm/yNorm:  " 
 					<< bestClusterGen->xNorm()	<< "/" << bestClusterGen->yNorm()	<< "\n";
 				cout << "+++++++++++++++++++++++++++++++++++\n";
