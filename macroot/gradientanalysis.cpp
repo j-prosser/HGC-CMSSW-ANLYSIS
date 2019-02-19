@@ -255,6 +255,15 @@ floatvecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const floatvector& 
             hists1.push_back(histotmp1);
             h_count +=1; 
 
+			/* Variables for resolution calc */
+
+			double offset_value;
+			double Pt_reco_mean;
+			double Pt_reco_stdev;
+			double gradient_PU0;
+			double Pt_reco_PUcorrected_mean;
+			double Pt_reco_PUcorrected_stdev;
+
             /*offset calcs + decisions*/
 
             // if either mean is zero, discard!
@@ -266,7 +275,7 @@ floatvecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const floatvector& 
                 floatvector tmpout;
                 tmpout.push_back(radii[i]);
                 tmpout.push_back(etas[j]);
-                tmpout.push_back(offset_vec[0]);
+                tmpout.push_back(offset_vec[0]); //offset_vec returns only the PU offset at index 0
                 _output.push_back(tmpout);         
                 //std::cout << "\t\t" << offset_vec[0]<< std::endl;
             }
