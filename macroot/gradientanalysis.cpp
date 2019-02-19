@@ -12,6 +12,9 @@
 #include "TCut.h"
 #include "TTree.h"
 #include "TString.h"
+#include "../inc/ResolutionStats.h"
+#include "TTreeReader.h"
+#include "TTreeReaderArray.h"
 
 std::string filepath_0 = "testout.root";
 std::string filepath_1 = "testout_pu.root";
@@ -288,11 +291,18 @@ void plot_pu_offset(const doublevecvec& pu_offset_results){
 		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
 }
 
-void resolution_corrected(const doublevecvec& pu_offsets, TTree* tree_pu, std::string path){
+void resolution_corrected(const doublevecvec& pu_offsets, TFile* f, std::string path){
     // obtain corrected resolution given the PU offsets
     
-    // loop over all entires of pt_reco
-    
+    TTreeReader reader("tstats", f);
+    TTreeReaderArray<float> raPtReco(reader, path.c_str());   
+
+    // Loop through all the TTree's entries
+    while (reader.Next()) {
+        for (float pt_reco_test: raPtReco) {
+            //std::cout << " RC: DEBUG: pt test " << pt_reco_test << std::endl;
+        }
+    }
 }
 
 
@@ -310,6 +320,8 @@ int main() {
 		TTree *tree0 = (TTree*) file_0->Get("tstats");
 		
         std::string path = "tc_clusters._pt_reco_gen";
+
+        std::cout << " MAIN: DEBUG:\t" << tree1->GetEntries() << std::endl;
 
         // gen_pt! hard coded!
         double gen_pt = 25.0; 
@@ -360,7 +372,9 @@ int main() {
 		
         // plot pu offset results
         plot_pu_offset(offsetoutput);
-
-
+            
+        std::string pt_reco_path = "tc_clusters._pt_reco";
+        resolution_corrected(offsetoutput,file_1,pt_reco_path);
+        
 
 }
