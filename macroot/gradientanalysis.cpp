@@ -20,6 +20,7 @@ std::string filepath_0 = "testout.root";
 std::string filepath_1 = "testout_pu.root";
 typedef std::vector<float> floatvector;
 typedef std::vector<std::vector<float>> floatvecvec;
+typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
 
 void printvector(floatvector v) {
 		/* for debugging */
@@ -278,7 +279,7 @@ floatvecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const floatvector& 
     return _output;
 }
 
-void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, const floatvector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta, std::string path, float gen_pt) {
+floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, const floatvector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta, std::string path, float gen_pt) {
     floatvecvec _output; 
     
     // init hists
@@ -286,8 +287,13 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
     std::vector< TH1* > h_pt_reco_gen_pu;
     //Create a canvas
     TCanvas *c_all = new TCanvas("c","");
-    c_all->DivideSquare(2*etas.size()*radii.size()); 
+    c_all->DivideSquare(4*etas.size()*radii.size()); 
     unsigned h_count =1;
+
+	// vector[i][j] or vector[i*j]
+	floatvecvec cor_widths;
+	floatvecvec cor_means;
+	floatvecvec cor_res;
 
     for (unsigned i=0; i<radii.size(); ++i) {
         for (unsigned j=0; j<etas.size(); ++j){
@@ -307,15 +313,19 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
             // file1
             std::string histname1 = "1file" + std::to_string(i) + std::to_string(j);
             std::string pt_reco_gen_path_200 = path + "_pt_reco_gen" + " >> "+ histname1;
-			std::string pt_reco_path_200 = path + "_pt_reco" + " >>"+ histname1;
 
             tree_pu->Draw(pt_reco_gen_path_200.c_str(),all_cuts);
             TH1 *histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());  
             h_pt_reco_gen_pu.push_back(histotmp1);
             h_count +=1; 
 
+
+			std::string pt_reco_path_200 = path + "_pt_reco" + " >> "+ histname1;
+			std::string histname2 = "1file_reco" + std::to_string(i)+std::to_string(j);
+
 			tree_pu->Draw(pt_reco_path_200.c_str(), all_cuts);
 			TH1 *histotmp2 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname2.c_str());
+			h_count +=1;
 
 
 			/* Variables for resolution calc */
@@ -337,13 +347,11 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
             } else {
                 // now we can do something!
                 floatvector offset_vec = offset(histotmp0->GetMean(), histotmp0->GetStdDev(), histotmp1->GetMean(), histotmp0->GetStdDev(), gen_pt);
-                floatvector tmpout;
-                tmpout.push_back(radii[i]);
-                tmpout.push_back(etas[j]);
-                tmpout.push_back(offset_vec[0]);
-                _output.push_back(tmpout);         
+                floatvector tmpout_width;
+				floatvector tmpout_means;
+				floatvector tmpout_res;
+
                 //std::cout << "\t\t" << offset_vec[0]<< std::endl;
-				//
 
 				gradient_PU0 = histotmp0->GetMean();
 				Pt_reco_mean = histotmp2->GetMean();
@@ -352,11 +360,31 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
 
 				Pt_reco_PUcorrected_mean = (Pt_reco_mean - offset_value) / gradient_PU0;
 				Pt_reco_PUcorrected_stdev = Pt_reco_stdev / gradient_PU0;
+
+				tmpout_width.push_back(radii[i]);
+				tmpout_width.push_back(etas[j]);
+				tmpout_width.push_back(Pt_reco_PUcorrected_stdev);
+
+				tmpout_means.push_back(radii[i]);
+				tmpout_means.push_back(etas[j]);
+				tmpout_means.push_back(Pt_reco_PUcorrected_mean);
+
+				tmpout_res.push_back(radii[i]);
+				tmpout_res.push_back(etas[j]);
+				tmpout_res.push_back(Pt_reco_PUcorrected_stdev / Pt_reco_PUcorrected_mean);
+
+
+
+				cor_widths.push_back(tmpout_width);
+				cor_means.push_back(tmpout_means);
+				cor_res.push_back(tmpout_res);
             }
 
 
         // End of eta /R loops
         }}
+	floatvecvecvec all_results = <cor_widths, cor_means, cor_res>;
+	return all_results;
     
 }
 void plot_pu_offset(const floatvecvec& pu_offset_results){
@@ -506,6 +534,14 @@ int main() {
 
         //std::string pt_reco_path = "tc_clusters.";
         //resolution_corrected(offsetoutput,file_1,pt_reco_path, _radii, _etas, eta_inc);
+		//
+
+		/* find Resolution for given R & Eta */
+
+		floatvecvecvec all_results = resolution_width(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, path, gen_pt); //3D vector, <<r, eta, width>,<r, eta, mean>,<r, eta, width/mean>>
+		floatvecvec Sigma_over_mean_by_r_eta = all_results[2];
+		plot_pu_offset(Sigma_over_mean_by_r_eta);
+
         
 
 }
