@@ -464,7 +464,7 @@ void resolution_corrected(const floatvecvec& pu_offsets, TFile* f, std::string p
     }
 }
 
-floatvecvecvec split2d_1d_by_eta(floatvecvec input) {
+floatvecvecvec split2d_1d_by_eta(floatvecvec input, floatvector _etas) {
 		/* input of dimensions points <r, eta, interesting_bit> needs to be split into vectors of < r, interesting_bit> for the same eta 
 		 * already sorted by eta
 		 * */
@@ -475,37 +475,24 @@ floatvecvecvec split2d_1d_by_eta(floatvecvec input) {
 		floatvector x;
 		floatvector y;
   
- 		for (auto& it : input) {
-			cout << (*it).size() << endl;
+ 		for (auto& eta: _etas) {
+			for (auto& it: input) {
+					if (it[1]==eta){
+							x.push_back(it[0]);
+							y.push_back(it[2]);
+					}
+			}
+			
+			tmpline.push_back(x);
+			tmpline.push_back(y);
+			printvv(tmpline);
+			tmpline.clear();
+			lines.push_back(tmpline);
+
 		}		
-		/*
-		while (run) {
-				cout << lines.size() << endl;
-				test_eta = input[i][1];
 
-				cout << "lol" << endl;
-				while (test_eta == input[i][1]) {
-					cout << input[i][0] << endl;
-					x.push_back(input[i][0]);
-					y.push_back(input[i][2]);	
-					i+=1;
-				}
-				cout << "pop" << endl;
-				tmpline.push_back(x);
-				tmpline.push_back(y);
-				lines.push_back(tmpline);
-				printvv(tmpline);
-				tmpline.clear();
-				x.clear();
-				y.clear();
-				
-				if (i>input.size()) {
-						run = false;
-				}
-		}
-		cout << 10 << endl;
 
-*/
+		
 		return lines;
 
 		
@@ -626,7 +613,7 @@ int main() {
 		//plot_pu_offset(Sigma_over_mean_by_r_eta);
 
 		cout << 8;
-		floatvecvecvec lines = split2d_1d_by_eta(Sigma_over_mean_by_r_eta);
+		floatvecvecvec lines = split2d_1d_by_eta(Sigma_over_mean_by_r_eta, _etas);
 
 		cout << "BEGUF: dnska" << endl;
 		plotLines(lines);
