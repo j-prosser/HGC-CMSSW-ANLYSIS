@@ -18,10 +18,10 @@
 
 std::string filepath_0 = "testout.root";
 std::string filepath_1 = "testout_pu.root";
-typedef std::vector<double> doublevector;
-typedef std::vector<std::vector<double>> doublevecvec;
+typedef std::vector<float> floatvector;
+typedef std::vector<std::vector<float>> floatvecvec;
 
-void printvector(doublevector v) {
+void printvector(floatvector v) {
 		/* for debugging */
 		for (unsigned i=0; i<v.size(); i++) {
 				std::cout << v[i] << " ";
@@ -30,14 +30,14 @@ void printvector(doublevector v) {
 }
 
 
-doublevector offset(double PU0_grad, double PU0_std, double PU200_grad, double PU200_std, double Pt_gen) {
+floatvector offset(float PU0_grad, float PU0_std, float PU200_grad, float PU200_std, float Pt_gen) {
 		/* this function takes in the gradients of both the PU0 and the PU200 cases and returns the offset.
 		 * This is preferrable to calcuating the offset for individual events, since it uses the average
 		 * assuming y_pu0 = m*x , y_pu200 = m_1*x , y_pu200_corr = m*x+c, this yields c = x_0 *(m_1 - m) with x_0 = Pt_gen
 		 */
 
-		double offset = Pt_gen * (PU200_grad - PU0_grad);
-		doublevector offset_noerr;
+		float offset = Pt_gen * (PU200_grad - PU0_grad);
+		floatvector offset_noerr;
 
 		/* This should be changed to offset_err and the error should be included once calculated */
 
@@ -47,14 +47,14 @@ doublevector offset(double PU0_grad, double PU0_std, double PU200_grad, double P
 		return offset_noerr;
 }
 
-doublevector cut_by_R_and_Eta(TTree* tree, std::string pathname, double radius, double eta, double halfrange = 0.005, double halfetarange = 0.05) {
-		double upperLimit = radius + halfrange;
-		double lowerLimit = radius - halfrange;
+floatvector cut_by_R_and_Eta(TTree* tree, std::string pathname, float radius, float eta, float halfrange = 0.005, float halfetarange = 0.05) {
+		float upperLimit = radius + halfrange;
+		float lowerLimit = radius - halfrange;
 
-		double upperLimitEta = eta + halfetarange;
-		double lowerLimitEta = eta -halfetarange;
+		float upperLimitEta = eta + halfetarange;
+		float lowerLimitEta = eta -halfetarange;
 
-		doublevector r_eta_grad_graderr;
+		floatvector r_eta_grad_graderr;
 		r_eta_grad_graderr.clear();
 
 		/* Set radius conditions */
@@ -93,21 +93,21 @@ doublevector cut_by_R_and_Eta(TTree* tree, std::string pathname, double radius, 
 }
 
 /*generates pu offset*/
-doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, std::string pathname, double radius, double eta, double halfrange = 0.004, double halfetarange = 0.05) {
+floatvector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, std::string pathname, float radius, float eta, float halfrange = 0.004, float halfetarange = 0.05) {
 		
     
-        double upperLimit = radius + halfrange;
-		double lowerLimit = radius - halfrange;
+        float upperLimit = radius + halfrange;
+		float lowerLimit = radius - halfrange;
 
-		double upperLimitEta = eta + halfetarange;
-		double lowerLimitEta = eta - halfetarange;
+		float upperLimitEta = eta + halfetarange;
+		float lowerLimitEta = eta - halfetarange;
 
         std::cout << " COMPARE: radius, eta bins:\t" << lowerLimit << "/" << upperLimit 
             << ",\t" << lowerLimitEta << "/" << upperLimitEta << std::endl;
 		
-        doublevector r_eta_grad_graderr;
-		doublevector r_eta_grad_graderr_pu;
-		doublevector r_eta_puoffset_offseterr;
+        floatvector r_eta_grad_graderr;
+		floatvector r_eta_grad_graderr_pu;
+		floatvector r_eta_puoffset_offseterr;
 		r_eta_puoffset_offseterr.clear();
 		r_eta_grad_graderr_pu.clear();
 		r_eta_grad_graderr.clear();
@@ -167,7 +167,7 @@ doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, std::string 
 
 		/* calculate offset */
 
-		doublevector offsetvec;
+		floatvector offsetvec;
 		offsetvec.clear();
 
 		offsetvec = offset( r_eta_grad_graderr.at(2), r_eta_grad_graderr.at(3), r_eta_grad_graderr_pu.at(2), r_eta_grad_graderr_pu.at(3), 25.0);
@@ -177,7 +177,7 @@ doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, std::string 
             offsetvec.at(0) = 0.;
         }
 
-		doublevector r_eta_offset;
+		floatvector r_eta_offset;
 		r_eta_offset.clear();
 		r_eta_offset.push_back(radius);
 		r_eta_offset.push_back(eta);
@@ -188,15 +188,15 @@ doublevector cut_by_R_and_Eta_compare(TTree* tree_1, TTree* tree_2, std::string 
 		return r_eta_offset;
 }
 
-doublevector genEta(double start, double stop, double step, bool bothsides) {
+floatvector genEta(float start, float stop, float step, bool bothsides) {
 		int n = (stop-start)/step;
 		if (bothsides) {
 				n = 2*n;
 		}
-		doublevector _etas;
+		floatvector _etas;
 		_etas.clear();
 
-		double _eta = start;
+		float _eta = start;
 		
 		while (_eta <=stop) {
 				_etas.push_back(_eta);
@@ -206,21 +206,21 @@ doublevector genEta(double start, double stop, double step, bool bothsides) {
 
 		return _etas;
 }	
-void printvv(std::vector<std::vector<double>> vv) {
+void printvv(std::vector<std::vector<float>> vv) {
 		/* for debugging */
 		for (unsigned i=0; i<vv.size(); i++) {
 				printvector(vv[i]);
 		}
 }
 						
-doublevector generate_radii(unsigned nR, double incR) {
-    doublevector radii;
+floatvector generate_radii(unsigned nR, float incR) {
+    floatvector radii;
     for (unsigned i=1; i != nR+1; ++i) {radii.push_back(i*incR);}
     return radii;
 }
 
-doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector& radii, const doublevector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta, std::string path, double gen_pt) {
-    doublevecvec _output; 
+floatvecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const floatvector& radii, const floatvector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta, std::string path, float gen_pt) {
+    floatvecvec _output; 
     
     // init hists
     std::vector< TH1* > hists0;
@@ -262,8 +262,8 @@ doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector
                  std::cout << " OFFSETCAlC:\tRadius/Eta"<< radii[i]<<"/"<<etas[j] <<"\tDISCARD\n";
             } else {
                 // now we can do something!
-                doublevector offset_vec = offset(histotmp0->GetMean(), histotmp0->GetStdDev(), histotmp1->GetMean(), histotmp0->GetStdDev(), gen_pt);
-                doublevector tmpout;
+                floatvector offset_vec = offset(histotmp0->GetMean(), histotmp0->GetStdDev(), histotmp1->GetMean(), histotmp0->GetStdDev(), gen_pt);
+                floatvector tmpout;
                 tmpout.push_back(radii[i]);
                 tmpout.push_back(etas[j]);
                 tmpout.push_back(offset_vec[0]);
@@ -278,7 +278,7 @@ doublevecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const doublevector
     return _output;
 }
 
-void plot_pu_offset(const doublevecvec& pu_offset_results){
+void plot_pu_offset(const floatvecvec& pu_offset_results){
 		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this 
          * -> Needs Axis labels, title Etc. 
          *  */
@@ -291,17 +291,32 @@ void plot_pu_offset(const doublevecvec& pu_offset_results){
 		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
 }
 
-void resolution_corrected(const doublevecvec& pu_offsets, TFile* f, std::string path){
+void resolution_corrected(const floatvecvec& pu_offsets, TFile* f, std::string path, const std::vector<float> radii, const std::vector<float> etas ){
     // obtain corrected resolution given the PU offsets
     
     TTreeReader reader("tstats", f);
-    TTreeReaderArray<float> raPtReco(reader, path.c_str());   
+    std::string reco_path = path + "_pt_reco";
+    std::string gen_path = path + "_pt_gen";     
+    std::string r_path = path + "_radius";    
+    std::string eta_path = path + "_eta";    
+    TTreeReaderArray<float> raPtReco(reader, reco_path.c_str());   
+    TTreeReaderArray<float> raPtGen(reader, gen_path.c_str());
+    TTreeReaderArray<float> raR(reader, r_path.c_str());
+    TTreeReaderArray<float> raEta(reader, eta_path.c_str());
 
-    // Loop through all the TTree's entries
+    
+    // need to obtain a eta index from etas for each ...
+    
+    // need to try to see if we can equate radii (?) 
+        
+    // while loop: LOOPS OVER ETA's
     while (reader.Next()) {
-        for (float pt_reco_test: raPtReco) {
-            //std::cout << " RC: DEBUG: pt test " << pt_reco_test << std::endl;
+        //std::cout << " RC: ra sizes " << raPtReco.GetSize() << " " << raPtGen.GetSize() <<" "<< raR.GetSize()<< " "<< raEta.GetSize() <<  std::endl;
+        //Loop over radii
+        for (float test: raR) { 
+            //std::cout << " RC: DEBUG: test " << test << std::endl;
         }
+
     }
 }
 
@@ -324,17 +339,17 @@ int main() {
         std::cout << " MAIN: DEBUG:\t" << tree1->GetEntries() << std::endl;
 
         // gen_pt! hard coded!
-        double gen_pt = 25.0; 
+        float gen_pt = 25.0; 
 
 		/* Define the list of radii and list of etas */
         // Hard coded variables :(
-        double radius_inc = 0.02;
+        float radius_inc = 0.02;
         unsigned radius_n = 10; 
-        doublevector _radii = generate_radii(radius_n,radius_inc);
+        floatvector _radii = generate_radii(radius_n,radius_inc);
         
         // Define eta
-        double eta_inc = 0.2;
-		doublevector _etas = genEta(1.65, 2.81, eta_inc, false); 
+        float eta_inc = 0.2;
+		floatvector _etas = genEta(1.65, 2.81, eta_inc, false); 
         /* the bool at the end specifies if one or both endcaps should be evaluated. (false is one). 
          * usually better to just do one, since the graph becomes more readable */
 
@@ -365,7 +380,7 @@ int main() {
         }
   
         // Find PU offset for given cuts in R and Eta
-        doublevecvec offsetoutput =  compare_pu_effects(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, path, gen_pt);
+        floatvecvec offsetoutput =  compare_pu_effects(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, path, gen_pt);
         std::cout <<" MAIN: size of offsetoutput vector:\t" << offsetoutput.size() << std::endl; 
         std::cout <<" MAIN: expected size of offsetoutput:\t" << _radii.size() * _etas.size() << std::endl;
         //printvv(offsetoutput); //for debugging uncomment this line
@@ -373,8 +388,8 @@ int main() {
         // plot pu offset results
         plot_pu_offset(offsetoutput);
             
-        std::string pt_reco_path = "tc_clusters._pt_reco";
-        resolution_corrected(offsetoutput,file_1,pt_reco_path);
+        std::string pt_reco_path = "tc_clusters.";
+        resolution_corrected(offsetoutput,file_1,pt_reco_path, _radii, _etas);
         
 
 }
