@@ -307,21 +307,26 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
             // file1
             std::string histname1 = "1file" + std::to_string(i) + std::to_string(j);
             std::string pt_reco_gen_path_200 = path + "_pt_reco_gen" + " >> "+ histname1;
+			std::string pt_reco_path_200 = path + "_pt_reco" + " >>"+ histname1;
 
             tree_pu->Draw(pt_reco_gen_path_200.c_str(),all_cuts);
             TH1 *histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());  
             hists1.push_back(histotmp1);
             h_count +=1; 
 
+			tree_pu->Draw(pt_reco_path_200.c_str(), all_cuts);
+			TH1 *histotmp2 = (TH1*)gPad->GetListOfPrimitives()
+
 			/* Variables for resolution calc */
 
-			double offset_value;
-			double Pt_reco_mean;
-			double Pt_reco_stdev;
-			double gradient_PU0;
-			double Pt_reco_PUcorrected_mean;
-			double Pt_reco_PUcorrected_stdev;
+			float offset_value;
+			float Pt_reco_mean;
+			float Pt_reco_stdev;
+			float gradient_PU0;
+			float Pt_reco_PUcorrected_mean;
+			float Pt_reco_PUcorrected_stdev;
 
+			gradient_PU0 = histotmp0->GetMean();
 
 
             /*offset calcs + decisions*/
@@ -338,6 +343,9 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
                 tmpout.push_back(offset_vec[0]);
                 _output.push_back(tmpout);         
                 //std::cout << "\t\t" << offset_vec[0]<< std::endl;
+				//
+
+				offset_value = offset_vec[0];
             }
 
 
