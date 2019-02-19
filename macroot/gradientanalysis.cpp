@@ -255,16 +255,7 @@ floatvecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const floatvector& 
             hists1.push_back(histotmp1);
             h_count +=1; 
 
-			/* Variables for resolution calc */
-
-			double offset_value;
-			double Pt_reco_mean;
-			double Pt_reco_stdev;
-			double gradient_PU0;
-			double Pt_reco_PUcorrected_mean;
-			double Pt_reco_PUcorrected_stdev;
-
-            /*offset calcs + decisions*/
+		            /*offset calcs + decisions*/
 
             // if either mean is zero, discard!
             if (histotmp0->GetMean() == 0. || histotmp1->GetMean() == 0.  ) {
@@ -321,6 +312,17 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
             TH1 *histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());  
             hists1.push_back(histotmp1);
             h_count +=1; 
+
+			/* Variables for resolution calc */
+
+			double offset_value;
+			double Pt_reco_mean;
+			double Pt_reco_stdev;
+			double gradient_PU0;
+			double Pt_reco_PUcorrected_mean;
+			double Pt_reco_PUcorrected_stdev;
+
+
 
             /*offset calcs + decisions*/
 
