@@ -295,8 +295,8 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 	floatvecvec cor_means;
 	floatvecvec cor_res;
 
-    for (unsigned i=0; i<radii.size(); ++i) {
-        for (unsigned j=0; j<etas.size(); ++j){
+    for (unsigned j=0; j<etas.size(); ++j) {
+        for (unsigned i=0; i<radii.size(); ++i){
 
             c_all->cd(h_count);
             TCut all_cuts = cuts_r[i] && cuts_eta[j];
@@ -465,6 +465,22 @@ void resolution_corrected(const floatvecvec& pu_offsets, TFile* f, std::string p
     }
 }
 
+floatvecvec split2d_1d_by_eta(floatvecvec input) {
+		/* input of dimensions points <r, eta, interesting_bit> needs to be split into vectors of < r, interesting_bit> for the same eta 
+		 * already sorted by eta
+		 * */
+
+		floatvecvecvec lines; //vector of lines, which are vectors containing 2 vectors of floats x & y. <line<<x><y>>>
+
+		floatvecvec tmpline;
+
+		float test_eta = input[0][2];
+
+		return tmpline
+
+}
+
+
 
 int main() {
         std::cout << " MAIN: gradientanalysis.cpp" << std::endl; 
@@ -547,6 +563,8 @@ int main() {
 		/* find Resolution for given R & Eta */
 
 		floatvecvecvec all_results = resolution_width(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, base_path, gen_pt); //3D vector, <<r, eta, width>,<r, eta, mean>,<r, eta, width/mean>>
+		
+
 		floatvecvec Sigma_over_mean_by_r_eta = all_results[2];
 		plot_pu_offset(Sigma_over_mean_by_r_eta);
 
