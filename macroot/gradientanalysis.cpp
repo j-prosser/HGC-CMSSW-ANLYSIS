@@ -471,6 +471,7 @@ floatvecvecvec split2d_1d_by_eta(floatvecvec input) {
 
 		floatvecvecvec lines; //vector of lines, which are vectors containing 2 vectors of floats x & y. <line<<x><y>>>
 
+		lines.clear();
 		floatvecvec tmpline;
 		floatvector x;
 		floatvector y;
@@ -480,7 +481,6 @@ floatvecvecvec split2d_1d_by_eta(floatvecvec input) {
 		bool run = true;
 		int i =0;
 
-		cout << lines.size() << endl;
 		cout << 9;
 		while (run) {
 				
@@ -504,6 +504,7 @@ floatvecvecvec split2d_1d_by_eta(floatvecvec input) {
 		}
 		cout << 10 << endl;
 
+
 		return lines;
 
 		
@@ -516,7 +517,7 @@ void plotLines(floatvecvecvec lines) {
 		c_l->SetGrid();
 		TMultiGraph *mg = new TMultiGraph();
 
-		cout << "DEBUG: GOTTHERE" << endl;
+		cout << "EBUG: GOTTHERE" << endl;
 		cout << lines.size() << endl;
 		for (unsigned i=0; i<lines.size(); i++) {
 				floatvecvec line = lines[i];
@@ -528,6 +529,7 @@ void plotLines(floatvecvecvec lines) {
 				copy(line[1].begin(), line[1].end(), y);
 
 				TGraph *tmpgraph = new TGraph(n, x, y);
+				tmpgraph->SetLineColor(i);
 				mg->Add(tmpgraph);
 		}
 		mg->Draw("ac*");
