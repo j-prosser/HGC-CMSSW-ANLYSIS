@@ -282,8 +282,8 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
     floatvecvec _output; 
     
     // init hists
-    std::vector< TH1* > hists0;
-    std::vector< TH1* > hists1;
+    std::vector< TH1* > h_pt_reco_gen_0;
+    std::vector< TH1* > h_pt_reco_gen_pu;
     //Create a canvas
     TCanvas *c_all = new TCanvas("c","");
     c_all->DivideSquare(2*etas.size()*radii.size()); 
@@ -301,7 +301,7 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
 
             tree_0->Draw(pt_reco_gen_path_0.c_str(),all_cuts);
             TH1 *histotmp0 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname0.c_str());  
-            hists1.push_back(histotmp0);
+            h_pt_reco_gen_pu.push_back(histotmp0);
             h_count +=1;
                 
             // file1
@@ -310,7 +310,7 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
 
             tree_pu->Draw(pt_reco_gen_path_200.c_str(),all_cuts);
             TH1 *histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());  
-            hists1.push_back(histotmp1);
+            h_pt_reco_gen_pu.push_back(histotmp1);
             h_count +=1; 
 
 			/* Variables for resolution calc */
