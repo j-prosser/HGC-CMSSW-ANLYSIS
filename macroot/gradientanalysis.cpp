@@ -488,6 +488,8 @@ floatvecvecvec split2d_1d_by_eta(floatvecvec input, floatvector _etas) {
 			printvv(tmpline);
 			lines.push_back(tmpline);
 
+			x.clear();
+			y.clear();
 			tmpline.clear();
 		}		
 
@@ -505,21 +507,18 @@ void plotLines(floatvecvecvec lines) {
 		c_l->SetGrid();
 		TMultiGraph *mg = new TMultiGraph();
 
-		cout << "EBUG: GOTTHERE" << endl;
-		cout << lines.size() << endl;
-		cout << lines[0].size() << endl;
-		for (unsigned i=0; i<1; i++) {
-				cout << "lol" << endl;
+		for (unsigned i=0; i<lines.size(); i++) {
 				floatvecvec line = lines[i];
 				int n = line[0].size();
 				float x [n];
 				float y [n];
+				cout << n << endl;
 
 				copy(line[0].begin(), line[0].end(), x);
 				copy(line[1].begin(), line[1].end(), y);
 
 				TGraph *tmpgraph = new TGraph(n, x, y);
-				tmpgraph->SetMarkerColor(i);
+				tmpgraph->SetLineColor(5*i+80);
 				mg->Add(tmpgraph);
 		}
 		mg->Draw("ac*");
@@ -612,12 +611,10 @@ int main() {
 		
 
 		floatvecvec Sigma_over_mean_by_r_eta = all_results[2];
-		//plot_pu_offset(Sigma_over_mean_by_r_eta);
+		plot_pu_offset(Sigma_over_mean_by_r_eta);
 
-		cout << 8;
 		floatvecvecvec lines = split2d_1d_by_eta(Sigma_over_mean_by_r_eta, _etas);
 
-		cout << "BEGUF: dnska" << endl;
 		plotLines(lines);
         
 
