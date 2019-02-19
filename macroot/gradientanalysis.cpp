@@ -319,14 +319,16 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
             h_pt_reco_gen_pu.push_back(histotmp1);
             h_count +=1; 
 
+			cout << "Debug" << histotmp1->GetMean() << endl;
 
-			std::string pt_reco_path_200 = path + "_pt_reco" + " >> "+ histname1;
 			std::string histname2 = "1file_reco" + std::to_string(i)+std::to_string(j);
+			std::string pt_reco_path_200 = path + "_pt_reco" + " >> "+ histname2;
 
 			tree_pu->Draw(pt_reco_path_200.c_str(), all_cuts);
 			TH1 *histotmp2 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname2.c_str());
 			h_count +=1;
 
+			std::cout << "Debug 2" << histotmp2->GetMean() << endl;
 
 			/* Variables for resolution calc */
 
@@ -339,10 +341,13 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 
 
 
+			//std::cout << " WR: DEBUG: "<<  histotmp1->GetMean() << " "<< histotmp2->GetMean() << endl; 
+
             /*offset calcs + decisions*/
 
             // if either mean is zero, discard!
-            if (histotmp0->GetMean() == 0. || histotmp1->GetMean() == 0.  ) {
+            
+			if (histotmp0->GetMean() == 0. || histotmp1->GetMean() == 0.  ) {
                  std::cout << " OFFSETCAlC:\tRadius/Eta"<< radii[i]<<"/"<<etas[j] <<"\tDISCARD\n";
             } else {
                 // now we can do something!
@@ -520,13 +525,16 @@ int main() {
         }
   
         // Find PU offset for given cuts in R and Eta
-        floatvecvec offsetoutput =  compare_pu_effects(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, path, gen_pt);
+        /*
+		floatvecvec offsetoutput =  compare_pu_effects(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, path, gen_pt);
         std::cout <<" MAIN: size of offsetoutput vector:\t" << offsetoutput.size() << std::endl; 
         std::cout <<" MAIN: expected size of offsetoutput:\t" << _radii.size() * _etas.size() << std::endl;
         //printvv(offsetoutput); //for debugging uncomment this line
 		
         // plot pu offset results
         plot_pu_offset(offsetoutput);
+		
+		*/
         
         std::string base_path = "tc_clusters.";
 
