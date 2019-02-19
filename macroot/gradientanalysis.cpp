@@ -315,7 +315,8 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
             h_count +=1; 
 
 			tree_pu->Draw(pt_reco_path_200.c_str(), all_cuts);
-			TH1 *histotmp2 = (TH1*)gPad->GetListOfPrimitives()
+			TH1 *histotmp2 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname2.c_str());
+
 
 			/* Variables for resolution calc */
 
@@ -326,7 +327,6 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
 			float Pt_reco_PUcorrected_mean;
 			float Pt_reco_PUcorrected_stdev;
 
-			gradient_PU0 = histotmp0->GetMean();
 
 
             /*offset calcs + decisions*/
@@ -345,7 +345,13 @@ void resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, co
                 //std::cout << "\t\t" << offset_vec[0]<< std::endl;
 				//
 
+				gradient_PU0 = histotmp0->GetMean();
+				Pt_reco_mean = histotmp2->GetMean();
+				Pt_reco_stdev = histotmp2->GetStdDev();
 				offset_value = offset_vec[0];
+
+				Pt_reco_PUcorrected_mean = (Pt_reco_mean - offset_value) / gradient_PU0;
+				Pt_reco_PUcorrected_stdev = Pt_reco_stdev / gradient_PU0;
             }
 
 
