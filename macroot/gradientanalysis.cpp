@@ -291,7 +291,24 @@ void plot_pu_offset(const floatvecvec& pu_offset_results){
 		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
 }
 
-void resolution_corrected(const floatvecvec& pu_offsets, TFile* f, std::string path, const std::vector<float> radii, const std::vector<float> etas ){
+int get_eta_index(float test_eta, const std::vector<float>& etas, float eta_inc){
+    int idx =-1;
+
+    unsigned check_idx =0;
+    while (idx == -1 && check_idx != etas.size()) {
+        
+        if (std::abs(test_eta) > etas[check_idx]-eta_inc/2. && std::abs(test_eta) < etas[check_idx] + eta_inc/2.){
+            idx = check_idx;
+        }
+
+        //increment
+        ++check_idx;
+    }
+
+    return idx;
+}
+
+void resolution_corrected(const floatvecvec& pu_offsets, TFile* f, std::string path, const std::vector<float> radii, const std::vector<float> etas, double eta_inc ){
     // obtain corrected resolution given the PU offsets
     
     TTreeReader reader("tstats", f);
@@ -304,14 +321,28 @@ void resolution_corrected(const floatvecvec& pu_offsets, TFile* f, std::string p
     TTreeReaderArray<float> raR(reader, r_path.c_str());
     TTreeReaderArray<float> raEta(reader, eta_path.c_str());
 
+
     
     // need to obtain a eta index from etas for each ...
     
     // need to try to see if we can equate radii (?) 
-        
     // while loop: LOOPS OVER ETA's
     while (reader.Next()) {
         //std::cout << " RC: ra sizes " << raPtReco.GetSize() << " " << raPtGen.GetSize() <<" "<< raR.GetSize()<< " "<< raEta.GetSize() <<  std::endl;
+        auto itPtReco = raPtReco.begin();
+        auto itPtGen = raPtGen.begin();
+        auto itR = raR.begin();
+        auto itEta = raEta.begin();
+
+        while (itPtReco != raPtReco.end() && itPtGen != raPtGen.end() && itR != raR.end() && itEta != raEta.end() ) {
+        
+            //std::cout << " RC: DEBUG: " << get_eta_index( *itEta, etas,eta_inc) << "\t" << *itEta << std::endl;
+            
+            //increment step
+            ++itPtReco; ++itPtGen; ++itR; ++itEta;
+        }
+        
+        
         //Loop over radii
         for (float test: raR) { 
             //std::cout << " RC: DEBUG: test " << test << std::endl;
@@ -389,7 +420,7 @@ int main() {
         plot_pu_offset(offsetoutput);
             
         std::string pt_reco_path = "tc_clusters.";
-        resolution_corrected(offsetoutput,file_1,pt_reco_path, _radii, _etas);
+        resolution_corrected(offsetoutput,file_1,pt_reco_path, _radii, _etas, eta_inc);
         
 
 }
