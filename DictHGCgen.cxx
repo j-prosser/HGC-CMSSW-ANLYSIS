@@ -156,7 +156,7 @@ namespace ROOT {
       vector<HGCgen> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<HGCgen>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<HGCgen>", -2, "vector", 447,
+         instance("vector<HGCgen>", -2, "vector", 210,
                   typeid(vector<HGCgen>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEHGCgengR_Dictionary, isa_proxy, 4,
                   sizeof(vector<HGCgen>) );
@@ -219,7 +219,7 @@ namespace ROOT {
       vector<HGCgen*> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<HGCgen*>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<HGCgen*>", -2, "vector", 447,
+         instance("vector<HGCgen*>", -2, "vector", 210,
                   typeid(vector<HGCgen*>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEHGCgenmUgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<HGCgen*>) );
@@ -282,7 +282,7 @@ namespace ROOT {
       map<unsigned int,HGCgen> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<unsigned int,HGCgen>));
       static ::ROOT::TGenericClassInfo 
-         instance("map<unsigned int,HGCgen>", -2, "map", 805,
+         instance("map<unsigned int,HGCgen>", -2, "map", 96,
                   typeid(map<unsigned int,HGCgen>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &maplEunsignedsPintcOHGCgengR_Dictionary, isa_proxy, 4,
                   sizeof(map<unsigned int,HGCgen>) );
@@ -345,7 +345,7 @@ namespace ROOT {
       map<int,HGCgen> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<int,HGCgen>));
       static ::ROOT::TGenericClassInfo 
-         instance("map<int,HGCgen>", -2, "map", 805,
+         instance("map<int,HGCgen>", -2, "map", 96,
                   typeid(map<int,HGCgen>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &maplEintcOHGCgengR_Dictionary, isa_proxy, 4,
                   sizeof(map<int,HGCgen>) );
@@ -400,8 +400,8 @@ namespace {
 0
     };
     static const char* includePaths[] = {
-"/usr/local/root/build/include",
-"/Users/yoyo/Documents/Project/dev/HGC-CMSSW-ANLYSIS/",
+"/usr/include/root",
+"/home/hep/sak115/HGC/vito-fork/",
 0
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
@@ -411,16 +411,19 @@ namespace {
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 extern int __Cling_Autoloading_Map;
 class __attribute__((annotate("$clingAutoload$inc/HGCgen.h")))  HGCgen;
-namespace std{inline namespace __1{template <class _Tp> class __attribute__((annotate("$clingAutoload$iosfwd")))  __attribute__((annotate("$clingAutoload$string")))  allocator;
-}}
-namespace std{inline namespace __1{template <class _Tp> struct __attribute__((annotate("$clingAutoload$__functional_base")))  __attribute__((annotate("$clingAutoload$string")))  less;
-}}
-namespace std{inline namespace __1{template <class _T1, class _T2> struct __attribute__((annotate("$clingAutoload$utility")))  __attribute__((annotate("$clingAutoload$string")))  pair;
-}}
+namespace std{template <typename _Tp> class __attribute__((annotate("$clingAutoload$bits/allocator.h")))  __attribute__((annotate("$clingAutoload$string")))  allocator;
+}
+namespace std{template <typename _Tp> struct __attribute__((annotate("$clingAutoload$bits/stl_function.h")))  __attribute__((annotate("$clingAutoload$string")))  less;
+}
+namespace std{template <class _T1, class _T2> struct __attribute__((annotate("$clingAutoload$bits/stl_pair.h")))  __attribute__((annotate("$clingAutoload$string")))  pair;
+}
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
 #line 1 "DictHGCgen dictionary payload"
 
+#ifndef G__VECTOR_HAS_CLASS_ITERATOR
+  #define G__VECTOR_HAS_CLASS_ITERATOR 1
+#endif
 
 #define _BACKWARD_BACKWARD_WARNING_H
 #include "inc/HGCgen.h"

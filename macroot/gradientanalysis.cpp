@@ -16,8 +16,8 @@
 #include "TTreeReader.h"
 #include "TTreeReaderArray.h"
 
-std::string filepath_0 = "new_run_r.root";
-std::string filepath_1 = "new_run_r_pu.root";
+std::string filepath_0 = "testout.root";
+std::string filepath_1 = "testout_pu.root";
 typedef std::vector<float> floatvector;
 typedef std::vector<std::vector<float>> floatvecvec;
 typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
@@ -300,6 +300,7 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 
             c_all->cd(h_count);
             TCut all_cuts = cuts_r[i] && cuts_eta[j];
+			cout << h_count << endl;
 
             // file0 : zero pu
             std::string histname0 = "0file" + std::to_string(i) + std::to_string(j);
@@ -309,7 +310,6 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
             TH1 *histotmp0 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname0.c_str());  
             h_pt_reco_gen_pu.push_back(histotmp0);
             h_count +=1;
-                
             // file1
             std::string histname1 = "1file" + std::to_string(i) + std::to_string(j);
             std::string pt_reco_gen_path_200 = path + "_pt_reco_gen" + " >> "+ histname1;
@@ -319,7 +319,7 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
             h_pt_reco_gen_pu.push_back(histotmp1);
             h_count +=1; 
 
-			cout << "Debug" << histotmp1->GetMean() << endl;
+			//cout << "Debug" << histotmp1->GetMean() << endl;
 
 			std::string histname2 = "1file_reco" + std::to_string(i)+std::to_string(j);
 			std::string pt_reco_path_200 = path + "_pt_reco" + " >> "+ histname2;
@@ -328,7 +328,7 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 			TH1 *histotmp2 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname2.c_str());
 			h_count +=1;
 
-			std::cout << "Debug 2" << histotmp2->GetMean() << endl;
+			//std::cout << "Debug 2" << histotmp2->GetMean() << endl;
 
 			/* Variables for resolution calc */
 
@@ -346,7 +346,6 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
             /*offset calcs + decisions*/
 
             // if either mean is zero, discard!
-            
 			if (histotmp0->GetMean() == 0. || histotmp1->GetMean() == 0.  ) {
                  std::cout << " OFFSETCAlC:\tRadius/Eta"<< radii[i]<<"/"<<etas[j] <<"\tDISCARD\n";
             } else {
@@ -465,7 +464,7 @@ void resolution_corrected(const floatvecvec& pu_offsets, TFile* f, std::string p
     }
 }
 
-floatvecvec split2d_1d_by_eta(floatvecvec input) {
+floatvecvecvec split2d_1d_by_eta(floatvecvec input) {
 		/* input of dimensions points <r, eta, interesting_bit> needs to be split into vectors of < r, interesting_bit> for the same eta 
 		 * already sorted by eta
 		 * */
@@ -473,12 +472,67 @@ floatvecvec split2d_1d_by_eta(floatvecvec input) {
 		floatvecvecvec lines; //vector of lines, which are vectors containing 2 vectors of floats x & y. <line<<x><y>>>
 
 		floatvecvec tmpline;
+		floatvector x;
+		floatvector y;
 
 		float test_eta = input[0][2];
 
-		return tmpline;
+		bool run = true;
+		int i =0;
+
+		cout << lines.size() << endl;
+		cout << 9;
+		while (run) {
+				
+				test_eta = input[i][1];
+
+				while (test_eta == input[i][1]) {
+					x.push_back(input[i][0]);
+					y.push_back(input[i][2]);	
+					i+=1;
+				}
+				tmpline.push_back(x);
+				tmpline.push_back(y);
+				lines.push_back(tmpline);
+				tmpline.clear();
+				x.clear();
+				y.clear();
+				
+				if (i>input.size()) {
+						run = false;
+				}
+		}
+		cout << 10 << endl;
+
+		return lines;
+
+		
+
 
 }
+
+void plotLines(floatvecvecvec lines) {
+		TCanvas *c_l = new TCanvas("C_l", "a", 700, 700);
+		c_l->SetGrid();
+		TMultiGraph *mg = new TMultiGraph();
+
+		cout << "DEBUG: GOTTHERE" << endl;
+		cout << lines.size() << endl;
+		for (unsigned i=0; i<lines.size(); i++) {
+				floatvecvec line = lines[i];
+				int n = line[0].size();
+				float x [n];
+				float y [n];
+
+				copy(line[0].begin(), line[0].end(), x);
+				copy(line[1].begin(), line[1].end(), y);
+
+				TGraph *tmpgraph = new TGraph(n, x, y);
+				mg->Add(tmpgraph);
+		}
+		mg->Draw("ac*");
+}	
+		
 
 
 
@@ -504,8 +558,8 @@ int main() {
 
 		/* Define the list of radii and list of etas */
         // Hard coded variables :(
-        float radius_inc = 0.005;
-        unsigned radius_n = 15; 
+        float radius_inc = 0.02;
+        unsigned radius_n = 10; 
         floatvector _radii = generate_radii(radius_n,radius_inc);
         
         // Define eta
@@ -566,8 +620,13 @@ int main() {
 		
 
 		floatvecvec Sigma_over_mean_by_r_eta = all_results[2];
-		plot_pu_offset(Sigma_over_mean_by_r_eta);
+		//plot_pu_offset(Sigma_over_mean_by_r_eta);
 
+		cout << 8;
+		floatvecvecvec lines = split2d_1d_by_eta(Sigma_over_mean_by_r_eta);
+
+		cout << "BEGUF: dnska" << endl;
+		plotLines(lines);
         
 
 }
