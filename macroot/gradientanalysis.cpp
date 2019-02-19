@@ -383,7 +383,7 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 
         // End of eta /R loops
         }}
-	floatvecvecvec all_results = <cor_widths, cor_means, cor_res>;
+	floatvecvecvec all_results = {cor_widths, cor_means, cor_res};
 	return all_results;
     
 }
@@ -530,7 +530,7 @@ int main() {
         
         std::string base_path = "tc_clusters.";
 
-        resolution_width(tree0, tree1, _radii, _etas, cuts_r, cuts_eta, base_path, gen_pt);
+        //resolution_width(tree0, tree1, _radii, _etas, cuts_r, cuts_eta, base_path, gen_pt);
 
         //std::string pt_reco_path = "tc_clusters.";
         //resolution_corrected(offsetoutput,file_1,pt_reco_path, _radii, _etas, eta_inc);
@@ -538,7 +538,7 @@ int main() {
 
 		/* find Resolution for given R & Eta */
 
-		floatvecvecvec all_results = resolution_width(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, path, gen_pt); //3D vector, <<r, eta, width>,<r, eta, mean>,<r, eta, width/mean>>
+		floatvecvecvec all_results = resolution_width(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, base_path, gen_pt); //3D vector, <<r, eta, width>,<r, eta, mean>,<r, eta, width/mean>>
 		floatvecvec Sigma_over_mean_by_r_eta = all_results[2];
 		plot_pu_offset(Sigma_over_mean_by_r_eta);
 
