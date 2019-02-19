@@ -471,29 +471,30 @@ floatvecvecvec split2d_1d_by_eta(floatvecvec input) {
 
 		floatvecvecvec lines; //vector of lines, which are vectors containing 2 vectors of floats x & y. <line<<x><y>>>
 
-		lines.clear();
 		floatvecvec tmpline;
 		floatvector x;
 		floatvector y;
-
-		float test_eta = input[0][2];
-
-		bool run = true;
-		int i =0;
-
-		cout << 9;
+  
+ 		for (auto& it : input) {
+			cout << (*it).size() << endl;
+		}		
+		/*
 		while (run) {
-				
+				cout << lines.size() << endl;
 				test_eta = input[i][1];
 
+				cout << "lol" << endl;
 				while (test_eta == input[i][1]) {
+					cout << input[i][0] << endl;
 					x.push_back(input[i][0]);
 					y.push_back(input[i][2]);	
 					i+=1;
 				}
+				cout << "pop" << endl;
 				tmpline.push_back(x);
 				tmpline.push_back(y);
 				lines.push_back(tmpline);
+				printvv(tmpline);
 				tmpline.clear();
 				x.clear();
 				y.clear();
@@ -504,7 +505,7 @@ floatvecvecvec split2d_1d_by_eta(floatvecvec input) {
 		}
 		cout << 10 << endl;
 
-
+*/
 		return lines;
 
 		
