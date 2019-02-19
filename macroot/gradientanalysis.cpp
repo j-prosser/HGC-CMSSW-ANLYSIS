@@ -486,9 +486,9 @@ floatvecvecvec split2d_1d_by_eta(floatvecvec input, floatvector _etas) {
 			tmpline.push_back(x);
 			tmpline.push_back(y);
 			printvv(tmpline);
-			tmpline.clear();
 			lines.push_back(tmpline);
 
+			tmpline.clear();
 		}		
 
 
@@ -507,7 +507,9 @@ void plotLines(floatvecvecvec lines) {
 
 		cout << "EBUG: GOTTHERE" << endl;
 		cout << lines.size() << endl;
-		for (unsigned i=0; i<lines.size(); i++) {
+		cout << lines[0].size() << endl;
+		for (unsigned i=0; i<1; i++) {
+				cout << "lol" << endl;
 				floatvecvec line = lines[i];
 				int n = line[0].size();
 				float x [n];
@@ -517,7 +519,7 @@ void plotLines(floatvecvecvec lines) {
 				copy(line[1].begin(), line[1].end(), y);
 
 				TGraph *tmpgraph = new TGraph(n, x, y);
-				tmpgraph->SetLineColor(i);
+				tmpgraph->SetMarkerColor(i);
 				mg->Add(tmpgraph);
 		}
 		mg->Draw("ac*");
