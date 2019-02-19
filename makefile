@@ -120,7 +120,7 @@ $(DICTS_CXX): Dict%.cxx: $(INC_DIR)/%.h $(INC_DIR)/%linkDef.h $(SRC_DIR)/%.cc $(
 # generate the objects (unlinked) 
 	$(CXX) -g -fPIC $(INC) $(ROOT_CFLAGS) -c $@ $(filter %.cc, $^)
 
-	$(CXX) -g -Wl,-soname,$(patsubst $(space)%.o, %.so, $(filter %.o, $^)) -shared $(patsubst %.cxx, %.o, $@) $(filter %.o, $^) -o $(patsubst %.o, %.so, $(filter %.o, $^))
+	$(CXX) -g  -shared $(patsubst %.cxx, %.o, $@) $(filter %.o, $^) -o $(patsubst %.o, %.so, $(filter %.o, $^))
 #g++ -g -fPIC $(INC) $(ROOT_CFLAGS) -c $@ $(filter %.cc, $^) 
 #g++ -g $(CXXFLAGS) -c Dict$@.cxx $(SRC_DIR)/$@.cc
 # replace soname with install_name
