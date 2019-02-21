@@ -16,8 +16,8 @@
 #include "TTreeReader.h"
 #include "TTreeReaderArray.h"
 
-std::string filepath_0 = "data/bashout_pu0.root";
-std::string filepath_1 = "data/new_R_pu.root";
+std::string filepath_0 = "data/bashout_pu0_2.root";
+std::string filepath_1 = "data/bashout_3.root";
 std::string filepath_out = "_saves/current_save.root";
 typedef std::vector<float> floatvector;
 typedef std::vector<std::vector<float>> floatvecvec;
@@ -395,9 +395,10 @@ void plot_pu_offset(const floatvecvec& pu_offset_results, TFile* fileout){
 		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this 
          * -> Needs Axis labels, title Etc. 
          *  */
-		TGraph2D *g2 = new TGraph2D(pu_offset_results.size());
+		TGraph2D *g2 = new TGraph2D();
+		int count = 0;
 		for (unsigned i=0; i< pu_offset_results.size(); i++) {
-            if (pu_offset_results[i][2] !=0.){ g2->SetPoint(i, pu_offset_results[i][0], pu_offset_results[i][1], pu_offset_results[i][2]);}
+            if (pu_offset_results[i][2] !=0. && pu_offset_results[i][1] >0.){ g2->SetPoint(count, pu_offset_results[i][0], pu_offset_results[i][1], pu_offset_results[i][2]);count++;}
 		}
 		/* Draw the graph. I should add axis labels and a title here. */
 		g2->GetZaxis()->SetTitle("Sigma_E/E");
@@ -530,28 +531,43 @@ floatvecvec plotLines(floatvecvecvec lines, floatvector etas, TFile* fileout) {
 
 				floatvector minimas = {y[min(y, n)], x[min(y,n)], etas[i]};
 				minimas_res_r_etas.push_back(minimas);
+				string graphname_eta;
+				if (etas[i] > 0.01) {
+					graphname_eta = to_string(etas[i]);
+				} else {
+						graphname_eta = "Full detector";
+				}
 
 				TGraph *tmpgraph = new TGraph(n, x, y);
-				tmpgraph->SetLineColor(5*i);
+				tmpgraph->SetLineColor(i+1);
+				tmpgraph->SetMarkerColor(i+1);
+				tmpgraph->SetTitle(graphname_eta.c_str());
 				mg->Add(tmpgraph);
 		}
 		mg->GetXaxis()->SetTitle("Radius (reduced coordinates)");
 		mg->GetYaxis()->SetTitle("Sigma_E/E");
 		mg->Draw("ac*");
+		c_l->BuildLegend(.9, .21, .9, .21);
 
 		fileout->Append(c_l);
 		return minimas_res_r_etas;
 }	
 		
 void plotMinimas(floatvecvec minimas, TFile* fileout) {
-		int n = minimas.size();
+		int n = minimas.size() -1;
 		float etas [n];
 		float radii [n];
 		float res [n];
-		for (unsigned i=0; i<minimas.size(); i++) {
-				etas[i] = minimas[i][2];
-				radii[i] = minimas[i][1];
-				res[i] = minimas[i][0];
+		if (minimas[0][2] < 0.01 && minimas[0][2] > -0.01) {
+				cout << "All Etas removed from lineplot" << endl;
+		} else {
+				cout << "Removed from files from lineplots" << endl;
+		}
+
+		for (unsigned i=0; i<n; i++) {
+				etas[i] = minimas[i+1][2];
+				radii[i] = minimas[i+1][1];
+				res[i] = minimas[i+1][0];
 		}
 
 		TCanvas *c_m_1 = new TCanvas("Best Resolution by Eta", "Best Resolution by Eta", 700, 700);
@@ -599,6 +615,7 @@ int main() {
         // Define eta
         float eta_inc = 0.2;
 		floatvector _etas = genEta(1.65, 2.81, eta_inc, false); 
+		_etas.insert(_etas.begin(), 0.0);
         /* the bool at the end specifies if one or both endcaps should be evaluated. (false is one). 
          * usually better to just do one, since the graph becomes more readable */
 
@@ -620,12 +637,19 @@ int main() {
         }
         std::vector<TCut> cuts_eta; 
         for (unsigned j=0; j<_etas.size(); ++j){
+			if (_etas[j] >0.01){
             std::string tmp1= "abs(_eta) > " + std::to_string(_etas[j]-eta_inc/2.);
             std::string tmp2= "abs(_eta) < "+std::to_string( _etas[j] + (eta_inc/2.));         
             TCut tmpcut1 = tmp1.c_str();
             TCut tmpcut2 = tmp2.c_str();
             //std::cout << tmp1 << tmp2<<std::endl;
             cuts_eta.push_back( tmpcut1 && tmpcut2 );
+			} else {
+					string tmp1 = "abs(_eta) > 0";
+					TCut tmpcut = tmp1.c_str();
+					cuts_eta.push_back(tmpcut);
+			}
+
         }
   
         // Find PU offset for given cuts in R and Eta
