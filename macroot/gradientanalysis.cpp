@@ -16,8 +16,9 @@
 #include "TTreeReader.h"
 #include "TTreeReaderArray.h"
 
-std::string filepath_0 = "data/new_R.root";
+std::string filepath_0 = "data/bashout_pu0.root";
 std::string filepath_1 = "data/new_R_pu.root";
+std::string filepath_out = "_saves/current_save.root";
 typedef std::vector<float> floatvector;
 typedef std::vector<std::vector<float>> floatvecvec;
 typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
@@ -390,7 +391,7 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 	return all_results;
     
 }
-void plot_pu_offset(const floatvecvec& pu_offset_results){
+void plot_pu_offset(const floatvecvec& pu_offset_results, TFile* fileout){
 		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this 
          * -> Needs Axis labels, title Etc. 
          *  */
@@ -399,8 +400,13 @@ void plot_pu_offset(const floatvecvec& pu_offset_results){
             if (pu_offset_results[i][2] !=0.){ g2->SetPoint(i, pu_offset_results[i][0], pu_offset_results[i][1], pu_offset_results[i][2]);}
 		}
 		/* Draw the graph. I should add axis labels and a title here. */
+		g2->GetZaxis()->SetTitle("Sigma_E/E");
+		g2->GetXaxis()->SetTitle("Radius (reduced coordinates)");
+		g2->GetYaxis()->SetTitle("Eta");
+
 		TCanvas *c = new TCanvas("x", "x", 600, 600);
 		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
+		fileout->Append(c);
 }
 
 int get_eta_index(float test_eta, const std::vector<float>& etas, float eta_inc){
@@ -506,7 +512,7 @@ int min(const float *a, int n) {
 		return loc;
 }
 
-floatvecvec plotLines(floatvecvecvec lines, floatvector etas) {
+floatvecvec plotLines(floatvecvecvec lines, floatvector etas, TFile* fileout) {
 		TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
 		c_l->SetGrid();
 		TMultiGraph *mg = new TMultiGraph();
@@ -533,10 +539,11 @@ floatvecvec plotLines(floatvecvecvec lines, floatvector etas) {
 		mg->GetYaxis()->SetTitle("Sigma_E/E");
 		mg->Draw("ac*");
 
+		fileout->Append(c_l);
 		return minimas_res_r_etas;
 }	
 		
-void plotMinimas(floatvecvec minimas) {
+void plotMinimas(floatvecvec minimas, TFile* fileout) {
 		int n = minimas.size();
 		float etas [n];
 		float radii [n];
@@ -559,6 +566,8 @@ void plotMinimas(floatvecvec minimas) {
 		g2->GetXaxis()->SetTitle("Eta");
 		g2->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
 		g2->Draw("ac*");
+		fileout->Append(c_m_1);
+		fileout->Append(c_m_2);
 }
 
 int main() {
@@ -645,12 +654,15 @@ int main() {
 		
 
 		floatvecvec Sigma_over_mean_by_r_eta = all_results[2];
-		plot_pu_offset(Sigma_over_mean_by_r_eta);
+
+		TFile *fileout = new TFile(filepath_out.c_str(), "RECREATE");
+		plot_pu_offset(Sigma_over_mean_by_r_eta, fileout);
 
 		floatvecvecvec lines = split2d_1d_by_eta(Sigma_over_mean_by_r_eta, _etas);
 
-		floatvecvec minimas = plotLines(lines, _etas);
+		floatvecvec minimas = plotLines(lines, _etas, fileout);
         
 
-		plotMinimas(minimas);
+		plotMinimas(minimas, fileout);
+		fileout->Write();
 }
