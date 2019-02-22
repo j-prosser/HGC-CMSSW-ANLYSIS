@@ -632,7 +632,7 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 				copy(line[2].begin(), line[2].end(), yerr);
 
 				for (unsigned j=0; j<n; j++) {
-						xerr[j] = 0.00375;
+						xerr[j] = 0.00001;
 						if (etas[i] > 0.01) {
 								floatvector tmp = {x[j], etas[i], y[j]};
 								surface_points.push_back(tmp);
@@ -679,10 +679,14 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 		TCanvas *c_besr_r_eta = new TCanvas("c_r", "c_2", 700, 700);
 
 		TGraphErrors *best_r_eta = new TGraphErrors(n, Etas, radius_minimas, etaerr, radius_minimas_err);
+		//best_r_eta->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
+		//best_r_eta->GetXaxis()->SetTitle("Eta");
 		best_r_eta->Draw("ac*");
 
 		TCanvas *c_best_res_eta = new TCanvas("c_res", "c_res", 700,700);
 		TGraphErrors *best_res_eta = new TGraphErrors(n, Etas, resol_minimas, etaerr, radius_minimas_err);	
+		best_res_eta->GetXaxis()->SetTitle("Eta");
+		best_res_eta->GetYaxis()->SetTitle("standardized error on the measurement");
 
 		best_res_eta->Draw("ac*");
 		fileout->Append(c_l);
