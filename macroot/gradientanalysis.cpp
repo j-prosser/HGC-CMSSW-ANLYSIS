@@ -16,8 +16,12 @@
 #include "TTreeReader.h"
 #include "TTreeReaderArray.h"
 
-std::string filepath_0 = "data/new_R.root";
-std::string filepath_1 = "data/new_R_pu.root";
+std::string filepath_0 = "data/bashout_pu0_2.root";
+std::string filepath_1 = "data/errordata_200_s0.root";
+std::string filepath_2 = "data/errordata_200_s200.root";
+std::string filepath_3 = "data/errordata_200_s400.root";
+std::string filepath_4 = "data/errordata_200_s600.root";
+std::string filepath_out = "_saves/current_save.root";
 typedef std::vector<float> floatvector;
 typedef std::vector<std::vector<float>> floatvecvec;
 typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
@@ -390,17 +394,23 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 	return all_results;
     
 }
-void plot_pu_offset(const floatvecvec& pu_offset_results){
+void plot_pu_offset(const floatvecvec& pu_offset_results, TFile* fileout){
 		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this 
          * -> Needs Axis labels, title Etc. 
          *  */
-		TGraph2D *g2 = new TGraph2D(pu_offset_results.size());
+		TGraph2D *g2 = new TGraph2D();
+		int count = 0;
 		for (unsigned i=0; i< pu_offset_results.size(); i++) {
-            if (pu_offset_results[i][2] !=0.){ g2->SetPoint(i, pu_offset_results[i][0], pu_offset_results[i][1], pu_offset_results[i][2]);}
+            if (pu_offset_results[i][2] !=0. && pu_offset_results[i][1] >0.){ g2->SetPoint(count, pu_offset_results[i][0], pu_offset_results[i][1], pu_offset_results[i][2]);count++;}
 		}
 		/* Draw the graph. I should add axis labels and a title here. */
+		g2->GetZaxis()->SetTitle("Sigma_E/E");
+		g2->GetXaxis()->SetTitle("Radius (reduced coordinates)");
+		g2->GetYaxis()->SetTitle("Eta");
+
 		TCanvas *c = new TCanvas("x", "x", 600, 600);
 		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
+		fileout->Append(c);
 }
 
 int get_eta_index(float test_eta, const std::vector<float>& etas, float eta_inc){
@@ -506,7 +516,7 @@ int min(const float *a, int n) {
 		return loc;
 }
 
-floatvecvec plotLines(floatvecvecvec lines, floatvector etas) {
+floatvecvec plotLines(floatvecvecvec lines, floatvector etas, TFile* fileout) {
 		TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
 		c_l->SetGrid();
 		TMultiGraph *mg = new TMultiGraph();
@@ -524,27 +534,43 @@ floatvecvec plotLines(floatvecvecvec lines, floatvector etas) {
 
 				floatvector minimas = {y[min(y, n)], x[min(y,n)], etas[i]};
 				minimas_res_r_etas.push_back(minimas);
+				string graphname_eta;
+				if (etas[i] > 0.01) {
+					graphname_eta = to_string(etas[i]);
+				} else {
+						graphname_eta = "Full detector";
+				}
 
 				TGraph *tmpgraph = new TGraph(n, x, y);
-				tmpgraph->SetLineColor(5*i);
+				tmpgraph->SetLineColor(i+1);
+				tmpgraph->SetMarkerColor(i+1);
+				tmpgraph->SetTitle(graphname_eta.c_str());
 				mg->Add(tmpgraph);
 		}
 		mg->GetXaxis()->SetTitle("Radius (reduced coordinates)");
 		mg->GetYaxis()->SetTitle("Sigma_E/E");
 		mg->Draw("ac*");
+		c_l->BuildLegend(.9, .21, .9, .21);
 
+		fileout->Append(c_l);
 		return minimas_res_r_etas;
 }	
 		
-void plotMinimas(floatvecvec minimas) {
-		int n = minimas.size();
+void plotMinimas(floatvecvec minimas, TFile* fileout) {
+		int n = minimas.size() -1;
 		float etas [n];
 		float radii [n];
 		float res [n];
-		for (unsigned i=0; i<minimas.size(); i++) {
-				etas[i] = minimas[i][2];
-				radii[i] = minimas[i][1];
-				res[i] = minimas[i][0];
+		if (minimas[0][2] < 0.01 && minimas[0][2] > -0.01) {
+				cout << "All Etas removed from lineplot" << endl;
+		} else {
+				cout << "Removed from files from lineplots" << endl;
+		}
+
+		for (unsigned i=0; i<n; i++) {
+				etas[i] = minimas[i+1][2];
+				radii[i] = minimas[i+1][1];
+				res[i] = minimas[i+1][0];
 		}
 
 		TCanvas *c_m_1 = new TCanvas("Best Resolution by Eta", "Best Resolution by Eta", 700, 700);
@@ -559,8 +585,118 @@ void plotMinimas(floatvecvec minimas) {
 		g2->GetXaxis()->SetTitle("Eta");
 		g2->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
 		g2->Draw("ac*");
+		fileout->Append(c_m_1);
+		fileout->Append(c_m_2);
 }
+floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvecvec lines3, floatvecvecvec lines4, floatvector etas, TFile* fileout) {
+		TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
+		c_l->SetGrid();
+		TMultiGraph *mg = new TMultiGraph();
 
+		floatvecvec surface_points;
+
+		int n = etas.size() -1;
+		float resol_minimas [n];
+		float radius_minimas [n];
+		float resol_minimas_err [n];
+		float radius_minimas_err [n];
+		float Etas [n];
+		float etaerr [n];
+
+
+		for (unsigned i=0; i<lines1.size(); i++) {
+				floatvecvec line1 = lines1[i];
+				floatvecvec line2 = lines2[i];
+				floatvecvec line3 = lines3[i];
+				floatvecvec line4 = lines4[i];
+		
+
+				floatvecvec line = {{},{}, {}};
+
+				for (unsigned i=0; i<line1[0].size();i++) {
+						line[0].push_back(line1[0][i]);
+						float mean = (line1[1][i] + line2[1][i] + line3[1][i] + line4[1][i])/4.;
+						float mean_of_squares = (line1[1][i]*line1[1][i]+line2[1][i]*line2[1][i]+line3[1][i]*line3[1][i]+line4[1][i]*line4[1][i])/4;
+						float width = sqrt(mean_of_squares -mean*mean);
+						line[1].push_back(mean);
+						line[2].push_back(width);
+				}
+				int n = line1[0].size();
+				float x [n];
+				float y [n];
+				float yerr[n];
+				float xerr[n];
+
+				copy(line[0].begin(), line[0].end(), x);
+				copy(line[1].begin(), line[1].end(), y);
+				copy(line[2].begin(), line[2].end(), yerr);
+
+				for (unsigned j=0; j<n; j++) {
+						xerr[j] = 0.00001;
+						if (etas[i] > 0.01) {
+								floatvector tmp = {x[j], etas[i], y[j]};
+								surface_points.push_back(tmp);
+						}
+				}
+
+				if (i == 0 && etas[i] < 0.01) {
+						cout << "Everything is fine." << endl;
+				} else if (i == 0) {
+						cout << "Not fine." << endl;
+				}
+
+				if (etas[i] > 0.1) {
+					resol_minimas[i-1] = y[min(y,n)];
+					radius_minimas[i-1] = x[min(y,n)];
+					resol_minimas_err[i-1] = yerr[min(y,n)];
+					radius_minimas_err[i-1] = xerr[min(y,n)];
+					etaerr[i-1] = 0.0;
+					Etas[i-1] = etas[i];
+
+					
+				} else  {
+						cout << y[min(y, n)] << " " << yerr[min(y,n)] << endl;
+				}
+	
+				string graphname_eta;
+				if (etas[i] > 0.01) {
+					graphname_eta = to_string(etas[i]);
+				} else {
+						graphname_eta = "Full detector";
+				}
+
+				TGraphErrors *tmpgraph = new TGraphErrors(n, x, y, xerr, yerr);
+				tmpgraph->SetLineColor(i+1);
+				tmpgraph->SetMarkerColor(i+1);
+				tmpgraph->SetTitle(graphname_eta.c_str());
+				mg->Add(tmpgraph);
+		}
+		mg->GetXaxis()->SetTitle("Radius (reduced coordinates)");
+		mg->GetYaxis()->SetTitle("Sigma_E/E");
+		mg->Draw("ac*");
+		c_l->BuildLegend(.9, .21, .9, .21);
+
+		TCanvas *c_besr_r_eta = new TCanvas("c_r", "c_2", 700, 700);
+
+		TGraphErrors *best_r_eta = new TGraphErrors(n, Etas, radius_minimas, etaerr, radius_minimas_err);
+		//best_r_eta->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
+		//best_r_eta->GetXaxis()->SetTitle("Eta");
+		best_r_eta->Draw("ac*");
+
+		TCanvas *c_best_res_eta = new TCanvas("c_res", "c_res", 700,700);
+		TGraphErrors *best_res_eta = new TGraphErrors(n, Etas, resol_minimas, etaerr, radius_minimas_err);	
+		best_res_eta->GetXaxis()->SetTitle("Eta");
+		best_res_eta->GetYaxis()->SetTitle("standardized error on the measurement");
+
+		best_res_eta->Draw("ac*");
+		fileout->Append(c_l);
+		fileout->Append(c_best_res_eta);
+		fileout->Append(c_besr_r_eta);
+
+		return surface_points;
+
+		
+}
 int main() {
         std::cout << " MAIN: gradientanalysis.cpp" << std::endl; 
 		/* open input file */
@@ -590,6 +726,7 @@ int main() {
         // Define eta
         float eta_inc = 0.2;
 		floatvector _etas = genEta(1.65, 2.81, eta_inc, false); 
+		_etas.insert(_etas.begin(), 0.0);
         /* the bool at the end specifies if one or both endcaps should be evaluated. (false is one). 
          * usually better to just do one, since the graph becomes more readable */
 
@@ -611,12 +748,19 @@ int main() {
         }
         std::vector<TCut> cuts_eta; 
         for (unsigned j=0; j<_etas.size(); ++j){
+			if (_etas[j] >0.01){
             std::string tmp1= "abs(_eta) > " + std::to_string(_etas[j]-eta_inc/2.);
             std::string tmp2= "abs(_eta) < "+std::to_string( _etas[j] + (eta_inc/2.));         
             TCut tmpcut1 = tmp1.c_str();
             TCut tmpcut2 = tmp2.c_str();
             //std::cout << tmp1 << tmp2<<std::endl;
             cuts_eta.push_back( tmpcut1 && tmpcut2 );
+			} else {
+					string tmp1 = "abs(_eta) > 0";
+					TCut tmpcut = tmp1.c_str();
+					cuts_eta.push_back(tmpcut);
+			}
+
         }
   
         // Find PU offset for given cuts in R and Eta
@@ -645,12 +789,39 @@ int main() {
 		
 
 		floatvecvec Sigma_over_mean_by_r_eta = all_results[2];
-		plot_pu_offset(Sigma_over_mean_by_r_eta);
 
 		floatvecvecvec lines = split2d_1d_by_eta(Sigma_over_mean_by_r_eta, _etas);
+		
+		
+		TFile *file_2 = new TFile(filepath_2.c_str(), "READ");
+		TFile *file_3 = new TFile(filepath_3.c_str(), "READ");
+		TFile *file_4 = new TFile(filepath_4.c_str(), "READ");
 
-		floatvecvec minimas = plotLines(lines, _etas);
-        
+		/* get the tree from the input file and specify the path of the relevant leaf*/ 
+		TTree *tree2 = (TTree*) file_2->Get("tstats");
+		TTree *tree3 = (TTree*) file_3->Get("tstats");
+		TTree *tree4 = (TTree*) file_4->Get("tstats");
 
-		plotMinimas(minimas);
+
+		floatvecvecvec lines2 = split2d_1d_by_eta(resolution_width(tree0,tree2,_radii,_etas,cuts_r, cuts_eta, base_path, gen_pt)[2], _etas); 
+		floatvecvecvec lines3 = split2d_1d_by_eta(resolution_width(tree0,tree3,_radii,_etas,cuts_r, cuts_eta, base_path, gen_pt)[2], _etas); 
+		floatvecvecvec lines4 = split2d_1d_by_eta(resolution_width(tree0,tree4,_radii,_etas,cuts_r, cuts_eta, base_path, gen_pt)[2], _etas); 
+
+		TFile *fileout = new TFile(filepath_out.c_str(), "RECREATE");
+		floatvecvec points = plotLines2(lines, lines2, lines3, lines4, _etas, fileout);
+		plot_pu_offset(points, fileout);
+		//plot_pu_offset(Sigma_over_mean_by_r_eta, fileout);
+		//floatvecvec minimas = plotLines(lines, _etas, fileout);
+		//plotMinimas(minimas, fileout);
+		
+		fileout->Write();
 }
+
+
+
+
+
+
+
+
+
