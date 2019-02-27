@@ -29,7 +29,7 @@ typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
 
 void printvector(floatvector v) {
 		/* for debugging */
-        std::cout << " Print vector size: "<<v.size() << "\t"
+        std::cout << " Print vector size: "<<v.size() << "\t";
 		for (unsigned i=0; i<v.size(); i++) {
 				std::cout << v[i] << " ";
 		}
