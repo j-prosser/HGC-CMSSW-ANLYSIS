@@ -15,6 +15,7 @@
 #include "../inc/ResolutionStats.h"
 #include "TTreeReader.h"
 #include "TTreeReaderArray.h"
+#include "TGraphErrors.h"
 
 std::string filepath_0 = "data/bashout_pu0_2.root";
 std::string filepath_1 = "data/errordata_200_s0.root";
@@ -28,6 +29,7 @@ typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
 
 void printvector(floatvector v) {
 		/* for debugging */
+        std::cout << " Print vector size: "<<v.size() << "\t"
 		for (unsigned i=0; i<v.size(); i++) {
 				std::cout << v[i] << " ";
 		}
@@ -517,7 +519,7 @@ int min(const float *a, int n) {
 }
 
 floatvecvec plotLines(floatvecvecvec lines, floatvector etas, TFile* fileout) {
-		TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
+		TCanvas *c_l = new TCanvas("Energy Resolution vs. R for different Etas", "Energy Resolution vs. R for different Etas", 700, 700);
 		c_l->SetGrid();
 		TMultiGraph *mg = new TMultiGraph();
 
@@ -534,9 +536,9 @@ floatvecvec plotLines(floatvecvecvec lines, floatvector etas, TFile* fileout) {
 
 				floatvector minimas = {y[min(y, n)], x[min(y,n)], etas[i]};
 				minimas_res_r_etas.push_back(minimas);
-				string graphname_eta;
+				TString graphname_eta;
 				if (etas[i] > 0.01) {
-					graphname_eta = to_string(etas[i]);
+					graphname_eta.Form("%.3f",etas[i]);
 				} else {
 						graphname_eta = "Full detector";
 				}
@@ -544,13 +546,13 @@ floatvecvec plotLines(floatvecvecvec lines, floatvector etas, TFile* fileout) {
 				TGraph *tmpgraph = new TGraph(n, x, y);
 				tmpgraph->SetLineColor(i+1);
 				tmpgraph->SetMarkerColor(i+1);
-				tmpgraph->SetTitle(graphname_eta.c_str());
+				tmpgraph->SetTitle(graphname_eta);
 				mg->Add(tmpgraph);
 		}
 		mg->GetXaxis()->SetTitle("Radius (reduced coordinates)");
-		mg->GetYaxis()->SetTitle("Sigma_E/E");
+		mg->GetYaxis()->SetTitle("Energy Resolution"); // Sigma_E/E
 		mg->Draw("ac*");
-		c_l->BuildLegend(.9, .21, .9, .21);
+		c_l->BuildLegend(.3, .4, .13, .5);
 
 		fileout->Append(c_l);
 		return minimas_res_r_etas;
