@@ -15,6 +15,7 @@
 #include "../inc/ResolutionStats.h"
 #include "TTreeReader.h"
 #include "TTreeReaderArray.h"
+#include "TGraphErrors.h"
 
 std::string filepath_0 = "data/bashout_pu0_2.root";
 std::string filepath_1 = "data/errordata_200_s0.root";
@@ -28,6 +29,7 @@ typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
 
 void printvector(floatvector v) {
 		/* for debugging */
+        std::cout << " Print vector size: "<<v.size() << "\t";
 		for (unsigned i=0; i<v.size(); i++) {
 				std::cout << v[i] << " ";
 		}
@@ -405,11 +407,12 @@ void plot_pu_offset(const floatvecvec& pu_offset_results, TFile* fileout){
             if (pu_offset_results[i][2] !=0. && pu_offset_results[i][1] >0.){ g2->SetPoint(count, pu_offset_results[i][0], pu_offset_results[i][1], pu_offset_results[i][2]);count++;}
 		}
 		/* Draw the graph. I should add axis labels and a title here. */
-		g2->GetZaxis()->SetTitle("Sigma_E/E");
+		//g2->SetTitle("");
+        g2->GetZaxis()->SetTitle("Sigma_E/E");
 		g2->GetXaxis()->SetTitle("Radius (reduced coordinates)");
 		g2->GetYaxis()->SetTitle("Eta");
 
-		TCanvas *c = new TCanvas("x", "x", 600, 600);
+		TCanvas *c = new TCanvas("pu_offset", "PU offset", 600, 600);
 		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
 		fileout->Append(c);
 }
@@ -518,7 +521,7 @@ int min(const float *a, int n) {
 }
 
 floatvecvec plotLines(floatvecvecvec lines, floatvector etas, TFile* fileout) {
-		TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
+		TCanvas *c_l = new TCanvas("Energy Resolution vs. R for different Etas", "Energy Resolution vs. R for different Etas", 700, 700);
 		c_l->SetGrid();
 		TMultiGraph *mg = new TMultiGraph();
 
@@ -535,9 +538,9 @@ floatvecvec plotLines(floatvecvecvec lines, floatvector etas, TFile* fileout) {
 
 				floatvector minimas = {y[min(y, n)], x[min(y,n)], etas[i]};
 				minimas_res_r_etas.push_back(minimas);
-				string graphname_eta;
+				TString graphname_eta;
 				if (etas[i] > 0.01) {
-					graphname_eta = to_string(etas[i]);
+					graphname_eta.Form("%.3f",etas[i]);
 				} else {
 						graphname_eta = "Full detector";
 				}
@@ -545,13 +548,13 @@ floatvecvec plotLines(floatvecvecvec lines, floatvector etas, TFile* fileout) {
 				TGraph *tmpgraph = new TGraph(n, x, y);
 				tmpgraph->SetLineColor(i+1);
 				tmpgraph->SetMarkerColor(i+1);
-				tmpgraph->SetTitle(graphname_eta.c_str());
+				tmpgraph->SetTitle(graphname_eta);
 				mg->Add(tmpgraph);
 		}
 		mg->GetXaxis()->SetTitle("Radius (reduced coordinates)");
-		mg->GetYaxis()->SetTitle("Sigma_E/E");
+		mg->GetYaxis()->SetTitle("Energy Resolution"); // Sigma_E/E
 		mg->Draw("ac*");
-		c_l->BuildLegend(.9, .21, .9, .21);
+		c_l->BuildLegend(.3, .4, .13, .5);
 
 		fileout->Append(c_l);
 		return minimas_res_r_etas;
@@ -590,7 +593,8 @@ void plotMinimas(floatvecvec minimas, TFile* fileout) {
 		fileout->Append(c_m_2);
 }
 floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvecvec lines3, floatvecvecvec lines4, floatvector etas, TFile* fileout) {
-		TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
+		
+        TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
 		c_l->SetGrid();
 		TMultiGraph *mg = new TMultiGraph();
 
@@ -661,7 +665,10 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 	
 				string graphname_eta;
 				if (etas[i] > 0.01) {
-					graphname_eta = to_string(etas[i]);
+                    // decimal places for histgoram key
+					graphname_eta = Form("%.3f", etas[i]); // to_string(etas[i]);
+					//graphname_eta = to_string(etas[i]);
+
 				} else {
 						graphname_eta = "Full detector";
 				}
@@ -672,21 +679,24 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 				tmpgraph->SetTitle(graphname_eta.c_str());
 				mg->Add(tmpgraph);
 		}
+        mg->SetTitle("Standardized Energy Error");
 		mg->GetXaxis()->SetTitle("Radius (reduced coordinates)");
 		mg->GetYaxis()->SetTitle("Sigma_E/E");
 		mg->Draw("ac*");
-		c_l->BuildLegend(.9, .21, .9, .21);
+		c_l->BuildLegend(.13, .71, .45, .87, "Eta Midpoints");
 
 		TCanvas *c_besr_r_eta = new TCanvas("c_r", "c_2", 700, 700);
 
 		TGraphErrors *best_r_eta = new TGraphErrors(n, Etas, radius_minimas, etaerr, radius_minimas_err);
-		//best_r_eta->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
-		//best_r_eta->GetXaxis()->SetTitle("Eta");
+		best_r_eta->SetTitle("Best Cluster Radius");
+        //best_r_eta->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
+		best_r_eta->GetXaxis()->SetTitle("Eta");
 		best_r_eta->Draw("ac*");
 
 		TCanvas *c_best_res_eta = new TCanvas("c_res", "c_res", 700,700);
 		TGraphErrors *best_res_eta = new TGraphErrors(n, Etas, resol_minimas, etaerr, radius_minimas_err);	
-		best_res_eta->GetXaxis()->SetTitle("Eta");
+		best_res_eta->SetTitle("Standardized Error against Eta");
+        best_res_eta->GetXaxis()->SetTitle("Eta");
 		best_res_eta->GetYaxis()->SetTitle("standardized error on the measurement");
 
 		best_res_eta->Draw("ac*");
