@@ -385,6 +385,7 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 				cor_widths.push_back(tmpout_width);
 				cor_means.push_back(tmpout_means);
 				cor_res.push_back(tmpout_res);
+				cout << "for Eta: "<< etas[j] << "   N: " << histotmp2->GetEntries() << endl;
             }
 
 
@@ -710,7 +711,7 @@ int main() {
 		TTree *tree1 = (TTree*) file_1->Get("tstats");
 		TTree *tree0 = (TTree*) file_0->Get("tstats");
 		
-        std::string path = "tc_clusters._pt_reco_gen";
+        std::string path = "gen_clusters._pt_reco_gen";
 
         std::cout << " MAIN: DEBUG:\t" << tree1->GetEntries() << std::endl;
 
