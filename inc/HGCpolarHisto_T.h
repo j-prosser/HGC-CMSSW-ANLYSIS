@@ -125,7 +125,7 @@ public:
 
     vector<maximaT> getMaxima( unsigned *nBinsToSum, TString strategy= "defaultMaximum", bool smear=true ); // in x/z and y/z
 
-    vector<HGCC3D> getNewC3Ds( double radius, unsigned *nBinsToSum, TString strategy= "defaultMaximum", bool smear=true );
+    vector<HGCC3D> getNewC3Ds( double radius, unsigned *nBinsToSum, TString seed_strategy= "defaultMaximum",TString assoc_strategy="euclidean", bool smear=true );
 
     void clear();
 

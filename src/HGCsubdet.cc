@@ -221,7 +221,7 @@ HGCnorm HGCsubdet::getNormTransform_C3D( int nColsTanTheta, double tanThetaMin, 
     }
 
     //  _vC3Dnorm = transform.getNewC3Ds( nNeighboursSearch, radius, gens );
-    
+    // getNewC3Ds
     return transform;
                                          
 }

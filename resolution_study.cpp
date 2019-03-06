@@ -42,9 +42,12 @@
 #include "HGCgeom.h"
 #include "HistoContainer.h"
 #include "HGC.h"
+#include "HGCC3D.h"
 #include "HGCTC.h"
 #include "HGCC2D.h"
 #include "HGCROC.h"
+#include "HGCgen.h"
+#include "HGCgenpart.h"
 //#include "Ntuplizer.h"
 #include "HGCht.h"
 
@@ -308,23 +311,13 @@ int main(int argc, char **argv){
 						3, 3, 3, 3, 3, 3, 3, 3                        //28 - 35
 					};
 			
-			// Trigger from gen loc only
-			HGCC3Dgen C3Dgen = detector.getSubdet(iendcap, isection)->getGenC3D( c3dRadius );
-            geC3Ds[iendcap][iRad] = C3Dgen.getNewC3Ds();
-			
-			if (verbose) {
-				// Print all found clusters gen method
-				for(unsigned ic3d=0; ic3d<geC3Ds[iendcap][iRad].size(); ++ic3d) {
-						
-                    std::cout << "iC3D:"<< ic3d << "  ngeC3D:" << geC3Ds[iendcap][iRad].size() << std::endl;
-				    geC3Ds[iendcap][iRad].at(ic3d).print();	
-				}}
-			
-			/*******************************/
+                    			/*******************************/
 			/**** Trigger from TCs ********/
 			HGCpolarHisto<HGCTC> grid = detector.getSubdet(iendcap, isection)->getPolarFwC3D<HGCTC>( c3dRadius );
 			//newC3Ds[iendcap] = grid.getNewC3Ds( c3dRadius, binSums );
-			tcC3Ds[iendcap][iRad] = grid.getNewC3Ds( c3dRadius, binSums );
+            TString s_strat = "defaultMaximum";
+            TString a_strat = "test"; // "euclidean" or "test"
+			tcC3Ds[iendcap][iRad] = grid.getNewC3Ds( c3dRadius, binSums, s_strat, a_strat );
 			/// If detailed view is needed
 			if(  saveEventByEvent  ) {
 				grid.getHisto()											->Write( 
@@ -342,16 +335,45 @@ int main(int argc, char **argv){
 				cout << "truth info:\t" << gen->Pt() << " "<< gen->xNorm() <<" " << gen->yNorm() <<std::endl;
 			}
 
-			// Obtain the closest cluster to truth	
+                    
+            /**Clustering on Gen Loc**/	
+            // Trigger from gen loc only
+	        HGCC3Dgen C3Dgen = detector.getSubdet(iendcap, isection)->getGenC3D( c3dRadius );
+            geC3Ds[iendcap][iRad] = C3Dgen.getNewC3Ds();
+
+            
+			
+            if (verbose) {//
+		        
+                // Print all found clusters gen method
+                for(unsigned ic3d=0; ic3d<geC3Ds[iendcap][iRad].size(); ++ic3d) {
+                            std::cout << "iC3D:"<< ic3d << "  ngeC3D:" << geC3Ds[iendcap][iRad].size() << std::endl;
+				            geC3Ds[iendcap][iRad].at(ic3d).print();	
+				    
+                        }}
+			
+
+
+			// CONSIDER MODIFYING TO GET BETTER CLUSTER
+            //  i.e. weight by pt? so if pt closer to gen/input, we accept c3d further from gen
+            // Obtain the closest cluster to truth	
 			auto bestClusterTC = min_element(tcC3Ds[iendcap][iRad].begin(), tcC3Ds[iendcap][iRad].end(), 
 					[gen](HGCC3D& lhs, HGCC3D& rhs) { return getDist(lhs,*gen) < getDist(rhs,*gen);} ) ;   
 			
 			auto bestClusterGen = min_element(geC3Ds[iendcap][iRad].begin(), geC3Ds[iendcap][iRad].end(), 	
 					[gen](HGCC3D& lhs, HGCC3D& rhs) { return getDist(lhs,*gen) < getDist(rhs,*gen);} ) ; 
 
-            if (bestClusterGen == geC3Ds[iendcap][iRad].end() || bestClusterTC == tcC3Ds[iendcap][iRad].end() )
-                {
+            
+            // check if best cluster was found!
+            bool gen_cluster_nexists = bestClusterGen    == geC3Ds[iendcap][iRad].end();
+            
+            // do comparision here for checking if good value. 
+            // 
+            
+            bool tc_cluster_nexists  = bestClusterTC     == tcC3Ds[iendcap][iRad].end();
+            if ( gen_cluster_nexists || tc_cluster_nexists ){
                     cout << "Best cluster FAILED!"  << endl;
+                    cout << "\tGEN/TC (1 means fail!)\t" << gen_cluster_nexists << "\t" << tc_cluster_nexists << '\n';
                     continue;
                 }
 

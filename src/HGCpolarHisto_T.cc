@@ -364,44 +364,85 @@ vector<maximaT> HGCpolarHisto<T>::getMaxima( unsigned *nBinsToSum, TString strat
 
 
 template<class T>
-vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum, TString strategy, bool smear ) {
-    
-  this->getMaxima( nBinsToSum, strategy, smear );
+vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum, TString seed_strategy, TString assoc_strategy, bool smear ) {
+   // method that performs seeding and hit association
+
+    //Change this line to change the seeding, i.e. perhaps try interpolation method instead etc... 
+    this->getMaxima( nBinsToSum, seed_strategy, smear );
 
     HGCC3D c3ds[_maxima.size()];
 
-    for(unsigned ihit=0; ihit<_hits.size(); ihit++){
+    if (assoc_strategy== "euclidean" ){ 
+        // Loop over hits fro hit association,
+        //  Loops over all 'hits' then (nested) c3ds 
+        for(unsigned ihit=0; ihit<_hits.size(); ihit++){
         
-        const T* hit = _hits.at( ihit );
+            const T* hit = _hits.at( ihit );
         
-        unsigned c3dIdToAdd=0;
-        double distance=1000;
-        unsigned i=0;
+            unsigned c3dIdToAdd=0;
+            double distance=1000;
+            unsigned i=0;
 
-       for( auto c3d : c3ds ) {
+            for( auto c3d : c3ds ) {
        
-           double dist = sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
+                // uses simple euclidean distance to determine wether part of cluster or not
+                double dist = sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
        
-           if( distance>dist ) {
-               distance = dist; 
-               c3dIdToAdd = i;
-           }
-       
-           i++;
-       }
+                // minimises distance wrt c3d euclid distance 
+                if( distance>dist ) {
+                    distance = dist; 
+                    c3dIdToAdd = i;
+                }
+             
+                i++;
+            }
         
-       /* check if the distance works */
-       if( distance<=radius )
-           this->addHitToC3D( c3ds, c3dIdToAdd, &(_hitsMap[hit->id()]) );
-//           c3ds[c3dIdToAdd].addC2D( _hitsMap[hit->id()] );
+       
+            /* check if the distance works for every hit */
+            if( distance<=radius ){
+                this->addHitToC3D( c3ds, c3dIdToAdd, &(_hitsMap[hit->id()]) );
+                //c3ds[c3dIdToAdd].addC2D( _hitsMap[hit->id()] );
+            }
+        }
+    } else if (assoc_strategy == "test" ){
+        // associate single hit to multiple c3d
+    
+        for(unsigned ihit=0; ihit<_hits.size(); ihit++){
+        
+            const T* hit = _hits.at( ihit );
+        
+            vector<double> dvec;
+            vector<unsigned> hitvec;
+            unsigned i=0;
+        
+            for( auto c3d : c3ds ) {
+       
+                // uses simple euclidean distance to determine wether part of cluster or not
+                double dist = sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
+            
+                if (radius >= dist) { 
+                    dvec.push_back(dist); 
+                    hitvec.push_back(i);
+                } 
+                i++;
+            }
 
+
+            //cout << " debug: c3d per hit: " << hitvec.size() << endl;
+            for (auto& c3dIdToAdd : hitvec){ 
+                /* check if the distance works for every hit */
+                this->addHitToC3D( c3ds, c3dIdToAdd, &(_hitsMap[hit->id()]) );
+            //           c3ds[c3dIdToAdd].addC2D( _hitsMap[hit->id()] );
+            }
+        }
     }
 
     for( auto c3d : c3ds ) {
         if(c3d.nclusters()>0 || c3d.ncells()>0)
             this->addNewC3D( c3d );
     }
-    
+   
+    // return vector of c3ds
     return HGCC3DbuildBase<T>::getNewC3Ds();
     
 }
