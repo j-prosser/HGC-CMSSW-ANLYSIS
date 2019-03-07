@@ -175,7 +175,6 @@ template<class T>
 void HGCpolarHisto<T>::getDefaultMaximum( unsigned *nBinsToSum ) {
 
 
-  
   /* searching for maxima */
   for (unsigned irz=0; irz<_rzNbins; irz++) {
     
@@ -275,6 +274,112 @@ void HGCpolarHisto<T>::getDefaultMaximum( unsigned *nBinsToSum ) {
 
 }
 
+/*NEW*/
+template<class T>
+void HGCpolarHisto<T>::getMaximumEnergy( unsigned *nBinsToSum ) {
+    /* Gets the maximas, and the value associated witht eh energy of each maximum*/
+
+  /* searching for maxima */
+  for (unsigned irz=0; irz<_rzNbins; irz++) {
+    
+        double rows[_phiNbins][3];
+        
+        for (unsigned iphi=0; iphi<_phiNbins; iphi++) {
+            
+            if ( irz == 0 ) {
+                rows[iphi][2] = _histoSums->GetBinContent(iphi+1, irz+2);
+                rows[iphi][1] = _histoSums->GetBinContent(iphi+1, irz+1);
+                rows[iphi][0] = 0.;
+            }
+            else if ( irz == _rzNbins-1 ) {
+                rows[iphi][2] = 0.;
+                rows[iphi][1] = _histoSums->GetBinContent(iphi+1, irz+1);
+                rows[iphi][0] = _histoSums->GetBinContent(iphi+1, irz);
+            }
+            else {
+                rows[iphi][2] = _histoSums->GetBinContent(iphi+1, irz+2);
+                rows[iphi][1] = _histoSums->GetBinContent(iphi+1, irz+1);
+                rows[iphi][0] = _histoSums->GetBinContent(iphi+1, irz);
+            }
+    
+        }
+
+        int nBinsSide = nBinsToSum[irz]-1/2;
+  
+        for (unsigned iphi=0; iphi<_phiNbins; iphi++) {
+            
+            bool isMaxima = true;
+	    
+            double centralValue = rows[iphi][1];	    
+
+            if( !( centralValue > rows[iphi][2] ) || !( centralValue >= rows[iphi][0] ) ) 
+                isMaxima = false;
+
+            if( isMaxima ) {
+                for( int isphi=1; isphi<=nBinsSide; isphi++ ) {
+                    
+                    int binToSearchLeft = iphi;                 
+                    binToSearchLeft = binToSearchLeft-isphi; 
+                    if( binToSearchLeft<0 ) binToSearchLeft = _phiNbins+binToSearchLeft;
+                    
+                    int binToSearchRight = iphi;   
+                    binToSearchRight = binToSearchRight+isphi;
+                    if( binToSearchRight>_phiNbins-1 ) binToSearchRight = binToSearchRight-_phiNbins;                
+                    
+                    if( !( centralValue >= rows[binToSearchRight][0] ) ||
+                        !( centralValue >= rows[binToSearchRight][1] ) ||
+                        !( centralValue >= rows[binToSearchRight][2] ) )
+                        isMaxima = false;
+                    
+                    if( !( centralValue >  rows[binToSearchLeft][0] )  ||
+                        !( centralValue >  rows[binToSearchLeft][1] )  ||
+                        !( centralValue >  rows[binToSearchLeft][2] )  )
+                        isMaxima = false;
+                    
+                    if( !isMaxima )
+                        break;
+                }
+            }
+                        
+	    
+            if(  isMaxima  ){
+	      
+                _histoMaxima->SetBinContent(iphi+1, irz+1, rows[iphi][1]);
+	      
+	            vector<unsigned> idsBin = _grid[iphi][irz].getIds();
+	      
+	            maximaT maxima(0.,0.);
+	      
+	            for( auto id : idsBin ){
+		            T *hit = &(_hitsMap[id]);
+		    
+		            maxima.first = maxima.first + hit->xNorm(); 
+		            maxima.second = maxima.second + hit->yNorm();
+                }
+	      
+	        
+                if( idsBin.size() == 0 ) continue;
+	            maxima.first = maxima.first / idsBin.size(); 
+	            maxima.second = maxima.second / idsBin.size(); 
+	      
+	            _maxima.push_back( maxima );
+	     
+                /*Add maxima energies to vector*/
+                _maxima_energies.push_back( centralValue );
+            }
+	    
+	
+        }
+
+  }
+  
+
+}
+
+
+
+
+
 template<class T>
 void HGCpolarHisto<T>::getThreshold( unsigned *nBinsToSum, double threshold ) {//in MIPT
 
@@ -337,11 +442,17 @@ TH2D * HGCpolarHisto<T>::getHistoMaxima( unsigned *nBinsToSum, TString strategy,
 
   if ( strategy == "threshold" ){
 
-
+    // 2nd argument is the cut
     this->getThreshold( nBinsToSum, 2 );
 
 
   }
+
+  if ( strategy == "MaximumEnergy" ) {
+    // new 
+    this->getMaximumEnergy( nBinsToSum );
+  
+  } 
 
 
   
@@ -369,6 +480,21 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
 
     //Change this line to change the seeding, i.e. perhaps try interpolation method instead etc... 
     this->getMaxima( nBinsToSum, seed_strategy, smear );
+
+
+    /* For debugging purposes */
+    if ( seed_strategy == "MaximumEnergy" ) {
+        cout << " debug maximum energy \n";
+
+        for (auto& val : _maxima_energies) {
+            cout << "\t" << val << "\n";
+        }
+
+        //Compare size fo vector to _maxima
+        cout << " Size of _maxima: " << _maxima.size() << "\tSize of _maxima_energies: " << _maxima_energies.size() << "\n";
+    }
+    
+    /* _maxima is a vector of pairs of doubles corrosponding to the x and y coordinates of the maxima in the grid. */
 
     HGCC3D c3ds[_maxima.size()];
 
@@ -405,36 +531,41 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
             }
         }
     } else if (assoc_strategy == "test" ){
-        // associate single hit to multiple c3d
-    
+        //ASSUME seed_strategy = "MaximumEnergy" !
+
+
         for(unsigned ihit=0; ihit<_hits.size(); ihit++){
         
             const T* hit = _hits.at( ihit );
         
-            vector<double> dvec;
-            vector<unsigned> hitvec;
+            unsigned c3dIdToAdd=0;
+            double distance=1000;
             unsigned i=0;
-        
+
             for( auto c3d : c3ds ) {
        
+                // SCALE BY ENERGY HERE
+                
                 // uses simple euclidean distance to determine wether part of cluster or not
                 double dist = sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
-            
-                if (radius >= dist) { 
-                    dvec.push_back(dist); 
-                    hitvec.push_back(i);
-                } 
+       
+                // minimises distance wrt c3d euclid distance 
+                if( distance>dist ) {
+                    distance = dist; 
+                    c3dIdToAdd = i;
+                }
+             
                 i++;
             }
-
-
-            //cout << " debug: c3d per hit: " << hitvec.size() << endl;
-            for (auto& c3dIdToAdd : hitvec){ 
-                /* check if the distance works for every hit */
+        
+       
+            /* check if the distance works for every hit */
+            if( distance<=radius ){
                 this->addHitToC3D( c3ds, c3dIdToAdd, &(_hitsMap[hit->id()]) );
-            //           c3ds[c3dIdToAdd].addC2D( _hitsMap[hit->id()] );
+                //c3ds[c3dIdToAdd].addC2D( _hitsMap[hit->id()] );
             }
         }
+
     }
 
     for( auto c3d : c3ds ) {
@@ -489,6 +620,9 @@ void HGCpolarHisto<T>::clear() {
     _maxima.clear();
     _hits.clear();
     _graph->Clear();
+
+    /*NEW*/
+    _maxima_energies.clear();
 
      for (unsigned iphi=0; iphi<_phiNbins; iphi++)
          for (unsigned irz=0; irz<_phiNbins; irz++)

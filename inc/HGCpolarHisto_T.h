@@ -137,6 +137,10 @@ private:
     map<unsigned,T> _hitsMap;
 
     void getDefaultMaximum(unsigned *nBinsToSum);
+
+    /* NEW */
+    void getMaximumEnergy(unsigned *nBinsToSum);
+    
     void getThreshold( unsigned *nBinsToSum, double threshold = 2);//in MIPT
 
     vector<T*> _hits;
@@ -149,6 +153,8 @@ private:
     double *_binArea;
 
     vector<maximaT> _maxima;
+    /*NEW*/
+    vector<double> _maxima_energies;
 
     TH2D* _histo;
     TH2D* _histoSums;

@@ -315,10 +315,18 @@ int main(int argc, char **argv){
 			/**** Trigger from TCs ********/
 			HGCpolarHisto<HGCTC> grid = detector.getSubdet(iendcap, isection)->getPolarFwC3D<HGCTC>( c3dRadius );
 			//newC3Ds[iendcap] = grid.getNewC3Ds( c3dRadius, binSums );
-            TString s_strat = "defaultMaximum";
-            TString a_strat = "test"; // "euclidean" or "test"
+            
+
+            /* Use maximas from grid to weight the hti association */
+            /* How do i get the maxima? */
+            
+            TString s_strat = "defaultMaximum"; // "defaultMaximum" or "threshold" or ""
+            TString a_strat = "euclidean"; // "euclidean" or "test"
 			tcC3Ds[iendcap][iRad] = grid.getNewC3Ds( c3dRadius, binSums, s_strat, a_strat );
-			/// If detailed view is needed
+	        
+        
+            
+            /// If detailed view is needed
 			if(  saveEventByEvent  ) {
 				grid.getHisto()											->Write( 
 						"polarFWtc_gridTcH"  );
