@@ -483,7 +483,7 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
 
 
     /* For debugging purposes */
-    if ( seed_strategy == "MaximumEnergy" ) {
+    /*if ( seed_strategy == "MaximumEnergy" ) {
         cout << " debug maximum energy \n";
 
         for (auto& val : _maxima_energies) {
@@ -492,11 +492,15 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
 
         //Compare size fo vector to _maxima
         cout << " Size of _maxima: " << _maxima.size() << "\tSize of _maxima_energies: " << _maxima_energies.size() << "\n";
-    }
+    }*/
     
     /* _maxima is a vector of pairs of doubles corrosponding to the x and y coordinates of the maxima in the grid. */
 
     HGCC3D c3ds[_maxima.size()];
+
+    //used for debugging
+    double tmpf=0.;  
+
 
     if (assoc_strategy== "euclidean" ){ 
         // Loop over hits fro hit association,
@@ -530,10 +534,12 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
                 //c3ds[c3dIdToAdd].addC2D( _hitsMap[hit->id()] );
             }
         }
-    } else if (assoc_strategy == "test" ){
+    } else if (assoc_strategy == "energyWeight" ){
         //ASSUME seed_strategy = "MaximumEnergy" !
 
+        // use R as a proxy for k (?) 
 
+        
         for(unsigned ihit=0; ihit<_hits.size(); ihit++){
         
             const T* hit = _hits.at( ihit );
@@ -547,11 +553,17 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
                 // SCALE BY ENERGY HERE
                 
                 // uses simple euclidean distance to determine wether part of cluster or not
-                double dist = sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
+                double dist =  sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
        
+                // constant 200,000 is fairly arbiary
+                double dist_e_weight = (200000 / _maxima_energies[i] )  * sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
+       
+                //cout << " Euclidean Dist: " << dist << "\tE Weighted: " << dist_e_weight << endl; 
+                
                 // minimises distance wrt c3d euclid distance 
-                if( distance>dist ) {
-                    distance = dist; 
+                if( distance>dist_e_weight) {
+                    distance = dist_e_weight;
+                    tmpf = dist; //debug 
                     c3dIdToAdd = i;
                 }
              
@@ -561,9 +573,13 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
        
             /* check if the distance works for every hit */
             if( distance<=radius ){
+
+                //debug
+                //cout << " checkRadius: "<< radius <<" weightedDist: " << distance << "\teuclideanDist: " << tmpf << endl;   
+
                 this->addHitToC3D( c3ds, c3dIdToAdd, &(_hitsMap[hit->id()]) );
                 //c3ds[c3dIdToAdd].addC2D( _hitsMap[hit->id()] );
-            }
+            } 
         }
 
     }

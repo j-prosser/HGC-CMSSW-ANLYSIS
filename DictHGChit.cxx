@@ -156,7 +156,7 @@ namespace ROOT {
       map<unsigned int,HGChit> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<unsigned int,HGChit>));
       static ::ROOT::TGenericClassInfo 
-         instance("map<unsigned int,HGChit>", -2, "map", 96,
+         instance("map<unsigned int,HGChit>", -2, "map", 805,
                   typeid(map<unsigned int,HGChit>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &maplEunsignedsPintcOHGChitgR_Dictionary, isa_proxy, 4,
                   sizeof(map<unsigned int,HGChit>) );
@@ -219,7 +219,7 @@ namespace ROOT {
       map<int,HGChit> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<int,HGChit>));
       static ::ROOT::TGenericClassInfo 
-         instance("map<int,HGChit>", -2, "map", 96,
+         instance("map<int,HGChit>", -2, "map", 805,
                   typeid(map<int,HGChit>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &maplEintcOHGChitgR_Dictionary, isa_proxy, 4,
                   sizeof(map<int,HGChit>) );
@@ -274,8 +274,8 @@ namespace {
 0
     };
     static const char* includePaths[] = {
-"/usr/include/root",
-"/home/hep/sak115/HGC/vito-fork/",
+"/usr/local/root/build/include",
+"/Users/yoyo/Documents/Project/dev/HGC-CMSSW-ANLYSIS/",
 0
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
@@ -285,19 +285,16 @@ namespace {
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 extern int __Cling_Autoloading_Map;
 class __attribute__((annotate("$clingAutoload$inc/HGChit.h")))  HGChit;
-namespace std{template <typename _Tp> struct __attribute__((annotate("$clingAutoload$bits/stl_function.h")))  __attribute__((annotate("$clingAutoload$string")))  less;
-}
-namespace std{template <class _T1, class _T2> struct __attribute__((annotate("$clingAutoload$bits/stl_pair.h")))  __attribute__((annotate("$clingAutoload$string")))  pair;
-}
-namespace std{template <typename _Tp> class __attribute__((annotate("$clingAutoload$bits/allocator.h")))  __attribute__((annotate("$clingAutoload$string")))  allocator;
-}
+namespace std{inline namespace __1{template <class _Tp> struct __attribute__((annotate("$clingAutoload$__functional_base")))  __attribute__((annotate("$clingAutoload$string")))  less;
+}}
+namespace std{inline namespace __1{template <class _T1, class _T2> struct __attribute__((annotate("$clingAutoload$utility")))  __attribute__((annotate("$clingAutoload$string")))  pair;
+}}
+namespace std{inline namespace __1{template <class _Tp> class __attribute__((annotate("$clingAutoload$memory")))  __attribute__((annotate("$clingAutoload$string")))  allocator;
+}}
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
 #line 1 "DictHGChit dictionary payload"
 
-#ifndef G__VECTOR_HAS_CLASS_ITERATOR
-  #define G__VECTOR_HAS_CLASS_ITERATOR 1
-#endif
 
 #define _BACKWARD_BACKWARD_WARNING_H
 #include "inc/HGChit.h"
