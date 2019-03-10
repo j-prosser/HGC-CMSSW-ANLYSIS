@@ -125,7 +125,7 @@ public:
 
     vector<maximaT> getMaxima( unsigned *nBinsToSum, TString strategy= "defaultMaximum", bool smear=true ); // in x/z and y/z
 
-    vector<HGCC3D> getNewC3Ds( double radius, unsigned *nBinsToSum, TString strategy= "defaultMaximum", bool smear=true );
+    vector<HGCC3D> getNewC3Ds( double radius, unsigned *nBinsToSum, TString seed_strategy= "defaultMaximum",TString assoc_strategy="euclidean", bool smear=true );
 
     void clear();
 
@@ -137,6 +137,10 @@ private:
     map<unsigned,T> _hitsMap;
 
     void getDefaultMaximum(unsigned *nBinsToSum);
+
+    /* NEW */
+    void getMaximumEnergy(unsigned *nBinsToSum);
+    
     void getThreshold( unsigned *nBinsToSum, double threshold = 2);//in MIPT
 
     vector<T*> _hits;
@@ -149,6 +153,8 @@ private:
     double *_binArea;
 
     vector<maximaT> _maxima;
+    /*NEW*/
+    vector<double> _maxima_energies;
 
     TH2D* _histo;
     TH2D* _histoSums;

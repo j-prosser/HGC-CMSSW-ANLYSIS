@@ -156,7 +156,7 @@ namespace ROOT {
       vector<vector<unsigned int> > *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<vector<unsigned int> >));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<vector<unsigned int> >", -2, "vector", 210,
+         instance("vector<vector<unsigned int> >", -2, "vector", 447,
                   typeid(vector<vector<unsigned int> >), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEvectorlEunsignedsPintgRsPgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<vector<unsigned int> >) );
@@ -219,7 +219,7 @@ namespace ROOT {
       vector<unsigned int> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<unsigned int>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<unsigned int>", -2, "vector", 210,
+         instance("vector<unsigned int>", -2, "vector", 447,
                   typeid(vector<unsigned int>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEunsignedsPintgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<unsigned int>) );
@@ -282,7 +282,7 @@ namespace ROOT {
       vector<HGCC3D> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<HGCC3D>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<HGCC3D>", -2, "vector", 210,
+         instance("vector<HGCC3D>", -2, "vector", 447,
                   typeid(vector<HGCC3D>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEHGCC3DgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<HGCC3D>) );
@@ -345,7 +345,7 @@ namespace ROOT {
       vector<HGCC3D*> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<HGCC3D*>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<HGCC3D*>", -2, "vector", 210,
+         instance("vector<HGCC3D*>", -2, "vector", 447,
                   typeid(vector<HGCC3D*>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEHGCC3DmUgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<HGCC3D*>) );
@@ -408,7 +408,7 @@ namespace ROOT {
       map<unsigned int,HGCC3D> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<unsigned int,HGCC3D>));
       static ::ROOT::TGenericClassInfo 
-         instance("map<unsigned int,HGCC3D>", -2, "map", 96,
+         instance("map<unsigned int,HGCC3D>", -2, "map", 805,
                   typeid(map<unsigned int,HGCC3D>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &maplEunsignedsPintcOHGCC3DgR_Dictionary, isa_proxy, 4,
                   sizeof(map<unsigned int,HGCC3D>) );
@@ -463,8 +463,8 @@ namespace {
 0
     };
     static const char* includePaths[] = {
-"/usr/include/root",
-"/home/hep/sak115/HGC/vito-fork/",
+"/usr/local/root/build/include",
+"/Users/yoyo/Documents/Project/dev/HGC-CMSSW-ANLYSIS/",
 0
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
@@ -473,20 +473,17 @@ namespace {
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 extern int __Cling_Autoloading_Map;
-namespace std{template <typename _Tp> class __attribute__((annotate("$clingAutoload$bits/allocator.h")))  __attribute__((annotate("$clingAutoload$string")))  allocator;
-}
+namespace std{inline namespace __1{template <class _Tp> class __attribute__((annotate("$clingAutoload$iosfwd")))  __attribute__((annotate("$clingAutoload$string")))  allocator;
+}}
 class __attribute__((annotate("$clingAutoload$inc/HGCC3D.h")))  HGCC3D;
-namespace std{template <typename _Tp> struct __attribute__((annotate("$clingAutoload$bits/stl_function.h")))  __attribute__((annotate("$clingAutoload$string")))  less;
-}
-namespace std{template <class _T1, class _T2> struct __attribute__((annotate("$clingAutoload$bits/stl_pair.h")))  __attribute__((annotate("$clingAutoload$string")))  pair;
-}
+namespace std{inline namespace __1{template <class _Tp> struct __attribute__((annotate("$clingAutoload$__functional_base")))  __attribute__((annotate("$clingAutoload$string")))  less;
+}}
+namespace std{inline namespace __1{template <class _T1, class _T2> struct __attribute__((annotate("$clingAutoload$utility")))  __attribute__((annotate("$clingAutoload$string")))  pair;
+}}
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
 #line 1 "DictHGCC3D dictionary payload"
 
-#ifndef G__VECTOR_HAS_CLASS_ITERATOR
-  #define G__VECTOR_HAS_CLASS_ITERATOR 1
-#endif
 
 #define _BACKWARD_BACKWARD_WARNING_H
 #include "inc/HGCC3D.h"

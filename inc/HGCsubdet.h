@@ -103,6 +103,7 @@ public:
 
     template<class T> // HGCC2D or HGCTC
     HGCpolarHisto<T> getPolarFwC3D(double radius) {
+        // Radius NOT used here!
         HGCpolarHisto<T> polarGrid( 36, 0.1, 0.52, 216, -TMath::Pi(), TMath::Pi() );
         vector<const T*> hits = getAll<T>();
         for(typename std::vector<const T*>::iterator hit=hits.begin(); hit!=hits.end(); hit++) 

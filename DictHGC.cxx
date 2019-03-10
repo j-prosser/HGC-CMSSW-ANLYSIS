@@ -145,7 +145,7 @@ namespace ROOT {
       vector<vector<unsigned int> > *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<vector<unsigned int> >));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<vector<unsigned int> >", -2, "vector", 210,
+         instance("vector<vector<unsigned int> >", -2, "vector", 447,
                   typeid(vector<vector<unsigned int> >), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEvectorlEunsignedsPintgRsPgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<vector<unsigned int> >) );
@@ -208,7 +208,7 @@ namespace ROOT {
       vector<vector<float> > *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<vector<float> >));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<vector<float> >", -2, "vector", 210,
+         instance("vector<vector<float> >", -2, "vector", 447,
                   typeid(vector<vector<float> >), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEvectorlEfloatgRsPgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<vector<float> >) );
@@ -271,7 +271,7 @@ namespace ROOT {
       vector<unsigned int> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<unsigned int>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<unsigned int>", -2, "vector", 210,
+         instance("vector<unsigned int>", -2, "vector", 447,
                   typeid(vector<unsigned int>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEunsignedsPintgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<unsigned int>) );
@@ -334,7 +334,7 @@ namespace ROOT {
       vector<int> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<int>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<int>", -2, "vector", 210,
+         instance("vector<int>", -2, "vector", 447,
                   typeid(vector<int>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEintgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<int>) );
@@ -397,7 +397,7 @@ namespace ROOT {
       vector<float> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<float>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<float>", -2, "vector", 210,
+         instance("vector<float>", -2, "vector", 447,
                   typeid(vector<float>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEfloatgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<float>) );
@@ -460,7 +460,7 @@ namespace ROOT {
       vector<bool> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<bool>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<bool>", -2, "vector", 518,
+         instance("vector<bool>", -2, "vector", 2148,
                   typeid(vector<bool>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEboolgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<bool>) );
@@ -523,7 +523,7 @@ namespace ROOT {
       vector<HGCgenpart*> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<HGCgenpart*>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<HGCgenpart*>", -2, "vector", 210,
+         instance("vector<HGCgenpart*>", -2, "vector", 447,
                   typeid(vector<HGCgenpart*>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEHGCgenpartmUgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<HGCgenpart*>) );
@@ -586,7 +586,7 @@ namespace ROOT {
       vector<HGCgen*> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<HGCgen*>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<HGCgen*>", -2, "vector", 210,
+         instance("vector<HGCgen*>", -2, "vector", 447,
                   typeid(vector<HGCgen*>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEHGCgenmUgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<HGCgen*>) );
@@ -649,7 +649,7 @@ namespace ROOT {
       map<unsigned int,HGCgenpart> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<unsigned int,HGCgenpart>));
       static ::ROOT::TGenericClassInfo 
-         instance("map<unsigned int,HGCgenpart>", -2, "map", 96,
+         instance("map<unsigned int,HGCgenpart>", -2, "map", 805,
                   typeid(map<unsigned int,HGCgenpart>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &maplEunsignedsPintcOHGCgenpartgR_Dictionary, isa_proxy, 0,
                   sizeof(map<unsigned int,HGCgenpart>) );
@@ -712,7 +712,7 @@ namespace ROOT {
       map<unsigned int,HGCgen> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<unsigned int,HGCgen>));
       static ::ROOT::TGenericClassInfo 
-         instance("map<unsigned int,HGCgen>", -2, "map", 96,
+         instance("map<unsigned int,HGCgen>", -2, "map", 805,
                   typeid(map<unsigned int,HGCgen>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &maplEunsignedsPintcOHGCgengR_Dictionary, isa_proxy, 0,
                   sizeof(map<unsigned int,HGCgen>) );
@@ -767,8 +767,8 @@ namespace {
 0
     };
     static const char* includePaths[] = {
-"/usr/include/root",
-"/home/hep/sak115/HGC/vito-fork/",
+"/usr/local/root/build/include",
+"/Users/yoyo/Documents/Project/dev/HGC-CMSSW-ANLYSIS/",
 0
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
@@ -782,9 +782,6 @@ class __attribute__((annotate("$clingAutoload$inc/HGC.h")))  HGC;
     static const char* payloadCode = R"DICTPAYLOAD(
 #line 1 "DictHGC dictionary payload"
 
-#ifndef G__VECTOR_HAS_CLASS_ITERATOR
-  #define G__VECTOR_HAS_CLASS_ITERATOR 1
-#endif
 
 #define _BACKWARD_BACKWARD_WARNING_H
 #include "inc/HGC.h"
