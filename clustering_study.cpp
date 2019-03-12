@@ -196,11 +196,9 @@ int main(int argc, char **argv){
 //		}}
 
 	//No more pre-save sorting!
-    std::vector<ResolutionStats> gen_stats; 
     std::vector<ResolutionStats> tc_stats;
 
 	//Add branches for difference schemes...
-	tStats->Branch( "gen_clusters", &gen_stats, 64000,1);
 	tStats->Branch( "tc_clusters", &tc_stats, 64000,1);
 
 
@@ -386,7 +384,7 @@ int main(int argc, char **argv){
 		tStats->Fill();
 
 		// Clear vectors to store event output
-		gen_stats.clear(); tc_stats.clear();	
+		tc_stats.clear();	
 
 		/* CLEANUP: LOOP over generated clusters clears the HGCC3D vectors */
 		for (unsigned iendcap=0; iendcap !=2; ++iendcap) {
