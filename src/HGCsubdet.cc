@@ -10,8 +10,9 @@ HGCsubdet::HGCsubdet( unsigned endcapId, unsigned sectionId, int verboselevel ) 
     _sectionId  = sectionId;
     _verboselevel = verboselevel;
     
+    //for(unsigned ilayer; ilayer<HGCgeom::instance()->nLayers(); ilayer++){
     /* Layers Z */
-    for(unsigned ilayer; ilayer<HGCgeom::instance()->nLayers(); ilayer++){
+    for(unsigned ilayer =  0; ilayer<HGCgeom::instance()->nLayers(); ilayer++){
         _layerZ.push_back( HGCgeom::instance()->layerZ(endcapId, ilayer) );
     }
 

@@ -17,12 +17,24 @@
 #include "TTreeReaderArray.h"
 #include "TGraphErrors.h"
 
-std::string filepath_0 = "data/energy_weight_pu0_200_333.root";
-std::string filepath_1 = "data/energy_weight/energy_weight_pu200_s0_200.root";
-std::string filepath_2 = "data/energy_weight/energy_weight_pu200_s200_200.root";
-std::string filepath_3 = "data/energy_weight/energy_weight_pu200_s400_200.root";
-std::string filepath_4 = "data/energy_weight/energy_weight_pu200_s600_200.root";
-std::string filepath_out = "_saves/current_save2_2.root";
+/*yoyo@dyn3162-24:~/Documents/Project/dev/HGC-CMSSW-ANLYSIS$ ls data/loge/
+energy_weight_pu0_200.root         energy_weight_pu200_s200_200.root  energy_weight_pu200_s600_200.root
+energy_weight_pu200_s0_200.root    energy_weight_pu200_s400_200.root*/
+
+/*std::string filepath_0 = "data/energy_weight_s019/energy_weight_pu0_200.root";
+std::string filepath_1 = "data/energy_weight_s019/energy_weight_pu200_s0_200.root";
+std::string filepath_2 = "data/energy_weight_s019/energy_weight_pu200_s200_200.root";
+std::string filepath_3 = "data/energy_weight_s019/energy_weight_pu200_s400_200.root";
+std::string filepath_4 = "data/energy_weight_s019/energy_weight_pu200_s600_200.root";*/
+std::string filepath_0 = "data/loge/energy_weight_pu0_200.root";
+std::string filepath_1 = "data/loge/energy_weight_pu200_s0_200.root";
+std::string filepath_2 = "data/loge/energy_weight_pu200_s200_200.root";
+std::string filepath_3 = "data/loge/energy_weight_pu200_s400_200.root";
+std::string filepath_4 = "data/loge/energy_weight_pu200_s600_200.root";
+
+
+
+std::string filepath_out = "_saves/current_save2_233.root";
 typedef std::vector<float> floatvector;
 typedef std::vector<std::vector<float>> floatvecvec;
 typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
@@ -857,14 +869,14 @@ int main() {
 //        unsigned radius_n = 5; 
 //        floatvector _radii = generate_radii(radius_n,radius_inc);
         floatvector _radii; 
-        float radius_inc = 0.01; //0.0075;
+        float radius_inc = 0.001; //0.0075;
 	    // Number of radii to be analysed
-	    unsigned radius_n = 15;
+	    unsigned radius_n = 6;
 	    // Create vector of radii
-	    for (unsigned i=1; i != radius_n + 1; ++i) {_radii.push_back(i*radius_inc);} 
+	    for (unsigned i=1; i != radius_n+1; ++i) {_radii.push_back(i*radius_inc);} 
 
 
-
+        // inc 0.02, offset -0.019
 
         // Define eta
         float eta_inc = 0.2;
@@ -882,7 +894,7 @@ int main() {
         // Generate vectors of TCuts
         std::vector<TCut> cuts_r;
         for (unsigned i=0; i<radius_n; ++i){
-            std::string tmp1= "_radius >= " + std::to_string(_radii[i] - (radius_inc/2.) );
+            std::string tmp1= "_radius >= " + std::to_string(_radii[i] - (0.0005) );
             std::string tmp2= "_radius < " + std::to_string(_radii[i]+ (radius_inc/2.));         
             TCut tmpcut1 = tmp1.c_str();
             TCut tmpcut2 = tmp2.c_str();

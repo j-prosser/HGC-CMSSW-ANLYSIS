@@ -74,10 +74,10 @@ int main(int argc, char **argv){
 
 
     // Radius increment (step)
-	Float_t incR = 0.01; //0.0075;
+	Float_t incR = 0.001; //0.0075;
 	// Number of radii to be analysed
-	unsigned nR = 15;
-	// Create vector of radii
+	unsigned nR = 6;
+	// Create vector of radii 0.019 / 0.015
 	for (unsigned i=1; i != nR+1; ++i) {c3dRadii.push_back(i*incR);} 
 
 	
@@ -292,6 +292,8 @@ int main(int argc, char **argv){
             
             TString s_strat = "MaximumEnergy"; // "defaultMaximum" or "threshold" or "MaximumEnergy"
             TString a_strat = "energyWeight"; // "euclidean" or "energyWeight"
+            
+           
 			tcC3Ds[iendcap][iRad] = grid.getNewC3Ds( c3dRadius, binSums, s_strat, a_strat );
 	        
             /// If detailed view is needed
@@ -306,17 +308,18 @@ int main(int argc, char **argv){
 						"polarFWtc_gridTcG"  );
 			}
 			
-			if (verbose) {
+		/*	if (verbose) {
 				cout << "********************\n";	
 				cout << "truth info:\t" << gen->Pt() << " "<< gen->xNorm() <<" " << gen->yNorm() <<std::endl;
 			}
-
+*/
             /**Clustering on Gen Loc**/	
             // Trigger from gen loc only
 	        //HGCC3Dgen C3Dgen = detector.getSubdet(iendcap, isection)->getGenC3D( c3dRadius );
             //geC3Ds[iendcap][iRad] = C3Dgen.getNewC3Ds();
 			
-            if (verbose) {//
+
+            /*            if (verbose) {//
 		        
                 // Print all found clusters gen method
                 for(unsigned ic3d=0; ic3d<geC3Ds[iendcap][iRad].size(); ++ic3d) {
@@ -325,7 +328,7 @@ int main(int argc, char **argv){
 				    
                         }}
 			
-
+*/
 
 			// CONSIDER MODIFYING TO GET BETTER CLUSTER
             //  i.e. weight by pt? so if pt closer to gen/input, we accept c3d further from gen
@@ -391,7 +394,7 @@ int main(int argc, char **argv){
 			for (unsigned iRad=0; iRad != nR; ++iRad) {
 				/// Delete data, at the end of every event loop
 				tcC3Ds[iendcap][iRad].clear();
-				geC3Ds[iendcap][iRad].clear();
+//				geC3Ds[iendcap][iRad].clear();
 			}
 		}
 
