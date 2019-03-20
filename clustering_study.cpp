@@ -74,7 +74,7 @@ int main(int argc, char **argv){
 
 
     // Radius increment (step)
-	Float_t incR = 0.01; //0.0075;
+	Float_t incR = 0.005; //0.0075;
 	// Number of radii to be analysed
 	unsigned nR = 15;
 	// Create vector of radii

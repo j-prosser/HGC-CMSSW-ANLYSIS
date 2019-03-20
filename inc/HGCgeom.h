@@ -245,7 +245,7 @@ public:
 
         /* wafer and TC */
 
-        TFile fIn("test_triggergeom.root", "read");
+        TFile fIn("~/HGC/vito-fork/test_triggergeom.root", "read");
 
         _wafers = new map< unsigned, geoWafer >*[_nEndcaps];
         for( unsigned iendcap=0; iendcap<_nEndcaps; iendcap++ )

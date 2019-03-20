@@ -556,7 +556,7 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
                 double dist =  sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
        
                 // constant 200,000 is fairly arbiary
-                double dist_e_weight = (200000 / _maxima_energies[i] )  * sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
+                double dist_e_weight = (_maxima_energies[i] / 200000)  * sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
        
                 //cout << " Euclidean Dist: " << dist << "\tE Weighted: " << dist_e_weight << endl; 
                 
@@ -572,7 +572,7 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
         
        
             /* check if the distance works for every hit */
-            if( distance<=radius ){
+            if( tmpf<=radius ){
 
                 //debug
                 //cout << " checkRadius: "<< radius <<" weightedDist: " << distance << "\teuclideanDist: " << tmpf << endl;   
