@@ -33,14 +33,14 @@ std::string filepath_2 = "data/inve/energy_weight_pu200_s200_200.root";
 std::string filepath_3 = "data/inve/energy_weight_pu200_s400_200.root";
 std::string filepath_4 = "data/inve/energy_weight_pu200_s600_200.root";
 */
-std::string filepath_0 = "data/stc/pu0_200.root";
-std::string filepath_1 = "data/stc/pu200_s0_200.root";
-std::string filepath_2 = "data/stc/pu200_s200_200.root";
-std::string filepath_3 = "data/stc/pu200_s400_200.root";
-std::string filepath_4 = "data/stc/pu200_s600_200.root";
+std::string filepath_0 = "data/tc/pu0_200.root";
+std::string filepath_1 = "data/tc/pu200_s0_200.root";
+std::string filepath_2 = "data/tc/pu200_s200_200.root";
+std::string filepath_3 = "data/tc/pu200_s400_200.root";
+std::string filepath_4 = "data/tc/pu200_s600_200.root";
 
 
-std::string filepath_out = "_saves/current_save_tc_stc.root";
+std::string filepath_out = "_saves/current_save_tc.root";
 typedef std::vector<float> floatvector;
 typedef std::vector<std::vector<float>> floatvecvec;
 typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
@@ -658,7 +658,7 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 				copy(line[2].begin(), line[2].end(), yerr);
 
 				for (unsigned j=0; j<n; j++) {
-						xerr[j] = 0.0025; //HARDCODED
+						xerr[j] = 0.00001; //HARDCODED
 						if (etas[i] > 0.01) {
 								floatvector tmp = {x[j], etas[i], y[j]};
 								surface_points.push_back(tmp);
@@ -728,9 +728,9 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 		best_res_eta->Draw();
 
 		cout << "PlotLines: Position C: appending graphs to file\n";
-		fileout->Append(c_l);
-		fileout->Append(c_best_res_eta);
-		fileout->Append(c_besr_r_eta);
+		fileout->Append(mg);
+		fileout->Append(best_res_eta);
+		fileout->Append(best_r_eta);
 
 		return surface_points;
 
