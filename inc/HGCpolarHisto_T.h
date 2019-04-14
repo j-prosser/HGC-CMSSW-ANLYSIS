@@ -131,7 +131,9 @@ public:
 
 private:
 
-    void addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const T *hit );
+    void addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const T *hit, double weight=1.);
+
+    //void addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const T *hit, double weight );
 
     void buildNewC3Ds( HGCsubdet *sdet );    
     map<unsigned,T> _hitsMap;
@@ -152,6 +154,7 @@ private:
     double _phiBinWidth, _rzBinWidth;
     double *_binArea;
 
+    //maybe combine these as a pair
     vector<maximaT> _maxima;
     /*NEW*/
     vector<double> _maxima_energies;

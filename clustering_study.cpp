@@ -74,7 +74,7 @@ int main(int argc, char **argv){
 
 
     // Radius increment (step)
-	Float_t incR = 0.001; //0.0075;
+	Float_t incR = 0.005;//0.0003; //0.0075;
 	// Number of radii to be analysed
 	unsigned nR = 20;
 	// Create vector of radii 0.019 / 0.015
@@ -288,11 +288,11 @@ int main(int argc, char **argv){
 
             /* Use maximas from grid to weight the hti association */
             /* How do i get the maxima? */
-            
-            TString s_strat = "MaximumEnergy"; // "defaultMaximum" or "threshold" or "MaximumEnergy"
-            TString a_strat = "energyWeight"; // "euclidean" or "energyWeight" or "logenergyweight"
-            
-           
+            TString s_strat = "MaximumEnergy"; //"MaximumEnergy"; // "defaultMaximum" or "threshold" or "MaximumEnergy"
+            TString a_strat = "EnergySplit"; // "euclidean" or "energyWeight" or "logenergyweight"
+            //EnergySplit
+
+
 			tcC3Ds[iendcap][iRad] = grid.getNewC3Ds( c3dRadius, binSums, s_strat, a_strat );
 	        
             /// If detailed view is needed

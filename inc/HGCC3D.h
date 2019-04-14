@@ -28,7 +28,8 @@ class HGCC3D : public HGChit {
 
     /* add */
     void addC2D( const HGCC2D* c2d );
-    void addTC ( const HGCTC*  tc  );
+    void addTC ( const HGCTC*  tc, double weight =1.  );
+//  void addTC_weight ( const HGCTC* tc, double weight=1.);
 
     /* set methods*/
     void setClusters(vector<unsigned> clusters) ;

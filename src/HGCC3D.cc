@@ -78,7 +78,7 @@ void HGCC3D::addC2D( const HGCC2D* c2d) {
     }
 
 }
-
+/*
 void HGCC3D::addTC( const HGCTC* tc) {
 
     if( _cells.size()==0 ) {
@@ -95,13 +95,13 @@ void HGCC3D::addTC( const HGCTC* tc) {
 
     _cells.push_back( tc->id() );
 
-    /* centre */
+    // centre
     double totPt = tc->Pt()+this->Pt();
     this->setEta ( ( tc->Eta()*tc->Pt()+this->Eta()*this->Pt() ) / totPt );
     this->setPhi ( ( tc->Phi()*tc->Pt()+this->Phi()*this->Pt() ) / totPt );
     this->setZ   ( ( tc->z()*tc->Pt()+this->z()*this->Pt() ) / totPt );
     
-    /* energy and Pt */
+    // energy and Pt
     this->setEnergy( this->Energy()+tc->Energy() );
     this->setPt    ( this->Pt()+tc->Pt()         );
 
@@ -112,7 +112,42 @@ void HGCC3D::addTC( const HGCTC* tc) {
     }
 
 }
+*/
 
+void HGCC3D::addTC( const HGCTC* tc, double weight) {
+
+    if( _cells.size()==0 ) {
+        this->setId   ( tc->id() );
+        this->setEta  ( tc->Eta () );
+        this->setPhi  ( tc->Phi () );
+        this->setZ    ( tc->z () ); 
+        this->setXnorm( tc->xNorm() );
+        this->setYnorm( tc->yNorm() );
+    } else {
+        this->setXnorm( ( this->xNorm()+tc->xNorm() )/2. );
+        this->setYnorm( ( this->yNorm()+tc->yNorm() )/2. );
+    }
+
+    _cells.push_back( tc->id() );
+
+    double augmentedPt = tc->Pt()*weight;
+    //centre 
+    double totPt =+augmentedPt+this->Pt();
+    this->setEta ( ( tc->Eta()*augmentedPt+this->Eta()*this->Pt() ) / totPt );
+    this->setPhi ( ( tc->Phi()*augmentedPt+this->Phi()*this->Pt() ) / totPt );
+    this->setZ   ( ( tc->z()*augmentedPt+this->z()*this->Pt() ) / totPt );
+    
+    // energy and Pt 
+    this->setEnergy( this->Energy()+tc->Energy() );
+    this->setPt    ( this->Pt()+augmentedPt      );
+
+    if( tc->layer() < this->getFirstLayer() ) this->setFirstLayer( tc->layer() ); 
+    if( tc->layer() > this->getLastLayer()   ) {
+        this->setLastLayer( tc->layer() ); 
+        this->setShowerLength( this->getLastLayer() - this->getFirstLayer() );
+    }
+
+}
 
 /* set */
 void HGCC3D::setClusters(vector<unsigned> clusters) { _clusters = clusters; }

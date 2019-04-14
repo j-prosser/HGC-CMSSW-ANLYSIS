@@ -231,7 +231,7 @@ void HGCpolarHisto<T>::getDefaultMaximum( unsigned *nBinsToSum ) {
                         !( centralValue >  rows[binToSearchLeft][1] )  ||
                         !( centralValue >  rows[binToSearchLeft][2] )  )
                         isMaxima = false;
-                    
+                   
                     if( !isMaxima )
                         break;
                 }
@@ -455,8 +455,13 @@ TH2D * HGCpolarHisto<T>::getHistoMaxima( unsigned *nBinsToSum, TString strategy,
   } 
 
 
-  
-  
+  //TODO 
+  // implement histo maximum method using first order / second order interpolation
+  // https://github.com/PFCal-dev/cmssw/blob/0f335e7a794cdb59da49175e818929466e0d24e9/L1Trigger/L1THGCal/src/backend/HGCalHistoSeedingImpl.cc#L217
+  // https://github.com/PFCal-dev/cmssw/blob/0f335e7a794cdb59da49175e818929466e0d24e9/L1Trigger/L1THGCal/python/customClustering.py#L150
+
+
+
   return _histoMaxima;
   
 }
@@ -476,24 +481,13 @@ vector<maximaT> HGCpolarHisto<T>::getMaxima( unsigned *nBinsToSum, TString strat
 
 template<class T>
 vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum, TString seed_strategy, TString assoc_strategy, bool smear ) {
-   // method that performs seeding and hit association
+    // method that performs seeding and hit association
 
-    //Change this line to change the seeding, i.e. perhaps try interpolation method instead etc... 
+    //TODO Implement energy dividing scheme corrosponding to the seed energy
+    // https://github.com/PFCal-dev/cmssw/blob/0f335e7a794cdb59da49175e818929466e0d24e9/L1Trigger/L1THGCal/src/backend/HGCalHistoClusteringImpl.cc#L45 
+    
     this->getMaxima( nBinsToSum, seed_strategy, smear );
 
-
-    /* For debugging purposes */
-    /*if ( seed_strategy == "MaximumEnergy" ) {
-        cout << " debug maximum energy \n";
-
-        for (auto& val : _maxima_energies) {
-            cout << "\t" << val << "\n";
-        }
-
-        //Compare size fo vector to _maxima
-        cout << " Size of _maxima: " << _maxima.size() << "\tSize of _maxima_energies: " << _maxima_energies.size() << "\n";
-    }*/
-    
     /* _maxima is a vector of pairs of doubles corrosponding to the x and y coordinates of the maxima in the grid. */
 
     HGCC3D c3ds[_maxima.size()];
@@ -624,7 +618,7 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
             } 
         }
 
-    }  else if (assoc_strategy == "energyWeight2" ){
+    } else if (assoc_strategy == "energyWeight2" ){
         //ASSUME seed_strategy = "MaximumEnergy" !
 
         // use R as a proxy for k (?) 
@@ -672,7 +666,56 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
     } 
 
 
+ else if(assoc_strategy == "EnergySplit"){
+        // implement Energy Split here   
+        int i=0;
+        for(unsigned ihit=0; ihit<_hits.size(); ihit++){
 
+            const T* hit = _hits.at( ihit );
+            
+            // declare vector to store targetEnergies
+            std::vector<pair<int,double> > targetSeeds;
+
+//Loop over Seeds/Maximas etc
+            for(int iseed=0; iseed < _maxima.size(); ++iseed){
+                double dist = sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
+      
+               
+                // minimises distance wrt c3d euclid distance 
+                if(dist<radius) {
+                    //append seed idx and seed energy to container
+                    targetSeeds.emplace_back(iseed, _maxima_energies[iseed]);
+
+                }
+        
+            } 
+   
+         
+            if(targetSeeds.empty()) continue;//check if any results
+            double totalSeedEnergy = 0; 
+            for (auto energy : targetSeeds){
+                totalSeedEnergy += energy.second;
+            }
+            for (auto energy: targetSeeds){
+
+                double seedWeight = 1;
+                seedWeight = energy.second/totalSeedEnergy;
+               
+                //now have the seed weight for each TC
+                
+                /* CMSSW method 
+                if( mapSeedMulticluster[energy.first].size()==0) {
+                    mapSeedMulticluster[energy.first] = l1t::HGCalMulticluster(clu, seedWeight) ;
+                }
+                mapSeedMulticluster[energy.first].addConstituent(clu, true, seedWeight);
+                */
+
+                this->addHitToC3D( c3ds, energy.first, &(_hitsMap[hit->id()]), seedWeight);
+
+      }
+        
+    }
+ }
     for( auto c3d : c3ds ) {
         if(c3d.nclusters()>0 || c3d.ncells()>0)
             this->addNewC3D( c3d );
@@ -684,8 +727,9 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
 }
 
 
+
 template<class T>
-void HGCpolarHisto<T>::addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const T *hit ) {
+void HGCpolarHisto<T>::addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const T *hit, double weight ) {
     
     cout << " !!! WARNING !!! HGCpolarHisto<T>::addHitToC3D(HGCC3D *c3ds, unsigned c3dId, const T *hit) is implemented only for Classes HGCC2D and HGCTC. " << endl; 
 
@@ -693,7 +737,7 @@ void HGCpolarHisto<T>::addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const T *hit )
 
 
 template<>
-void HGCpolarHisto<HGCC2D>::addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const HGCC2D *hit ) {
+void HGCpolarHisto<HGCC2D>::addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const HGCC2D *hit, double weight ) {
     
     c3ds[c3dId].addC2D( hit );
 
@@ -701,12 +745,18 @@ void HGCpolarHisto<HGCC2D>::addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const HGC
 
 
 template<>
-void HGCpolarHisto<HGCTC>::addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const HGCTC *hit ) {
+void HGCpolarHisto<HGCTC>::addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const HGCTC *hit, double weight ) {
 
     c3ds[c3dId].addTC( hit );
 
 }
 
+
+// hmmmm
+//template<>
+//void HGCpolarHisto<HGCTC>::addHitToC3D( HGCC3D *c3ds, unsigned c3dId, const HGCTC *hit, double weight) {
+//    c3ds[c3dId].addTC_weight( hit, weight); 
+//}
 
 template<class T>
 TGraph* HGCpolarHisto<T>::getGraph() {

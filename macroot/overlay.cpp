@@ -1,6 +1,7 @@
 #include "TGraphErrors.h"
 #include "TGraph.h"
 #include "TFile.h"
+#include <string>
 
 string filepath_1 = "stc_save1.root";
 string filepath_2 = "e_weight_save1.root";

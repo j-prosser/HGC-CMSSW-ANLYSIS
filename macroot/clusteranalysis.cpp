@@ -33,14 +33,14 @@ std::string filepath_2 = "data/inve/energy_weight_pu200_s200_200.root";
 std::string filepath_3 = "data/inve/energy_weight_pu200_s400_200.root";
 std::string filepath_4 = "data/inve/energy_weight_pu200_s600_200.root";
 */
-std::string filepath_0 = "data/tc/pu0_200.root";
-std::string filepath_1 = "data/tc/pu200_s0_200.root";
-std::string filepath_2 = "data/tc/pu200_s200_200.root";
-std::string filepath_3 = "data/tc/pu200_s400_200.root";
-std::string filepath_4 = "data/tc/pu200_s600_200.root";
+std::string filepath_0 = "data/stc/pu0_200.root";
+std::string filepath_1 = "data/stc/pu200_s0_200.root";
+std::string filepath_2 = "data/stc/pu200_s200_200.root";
+std::string filepath_3 = "data/stc/pu200_s400_200.root";
+std::string filepath_4 = "data/stc/pu200_s600_200.root";
 
 
-std::string filepath_out = "_saves/current_save_tc.root";
+std::string filepath_out = "_saves/stc_graphs.root";
 typedef std::vector<float> floatvector;
 typedef std::vector<std::vector<float>> floatvecvec;
 typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
@@ -48,19 +48,21 @@ typedef std::vector<std::vector<std::vector<float>>> floatvecvecvec;
 
 void printvector(floatvector v) {
 		/* for debugging */
-        std::cout << " Print vector size: "<<v.size() << "\t";
+        std::cout << " Size: "<<v.size() << "\t";
 		for (unsigned i=0; i<v.size(); i++) {
 				std::cout << v[i] << " ";
 		}
 		std::cout << std::endl;
 }
 
-
+// DEPRECATED: offset
 floatvector offset(float PU0_grad, float PU0_std, float PU200_grad, float PU200_std, float Pt_gen) {
 		/* this function takes in the gradients of both the PU0 and the PU200 cases and returns the offset.
 		 * This is preferrable to calcuating the offset for individual events, since it uses the average
 		 * assuming y_pu0 = m*x , y_pu200 = m_1*x , y_pu200_corr = m*x+c, this yields c = x_0 *(m_1 - m) with x_0 = Pt_gen
-		 */
+		 *
+         * Gradient is ...?
+         */
 
 		float offset = Pt_gen * (PU200_grad - PU0_grad);
 		floatvector offset_noerr;
@@ -305,8 +307,13 @@ floatvecvec compare_pu_effects(TTree* tree_0, TTree* tree_pu,const floatvector& 
     return _output;
 }
 
-floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector& radii, const floatvector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta, std::string path, float gen_pt) {
+floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu, const floatvector& radii, const floatvector& etas, const std::vector<TCut>& cuts_r,const std::vector<TCut>& cuts_eta, std::string path, float gen_pt) {
     floatvecvec _output;
+
+    /* SNWEBB version of drawing invisible hists
+     * tree->Draw(var+">>h",cut,"goff");
+     * TH2F star g=(TH2F*) ((TH2F*)gDirectory->Get("h"))->Clone();
+     * */
 
     // init hists
     std::vector< TH1* > h_pt_reco_gen_0;
@@ -317,9 +324,10 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
     unsigned h_count =1;
 
 	// vector[i][j] or vector[i*j]
-	floatvecvec cor_widths;
+	floatvecvec cor_stddev;
 	floatvecvec cor_means;
 	floatvecvec cor_res;
+    floatvecvec PU_offsets;
 
     for (unsigned j=0; j<etas.size(); ++j) {
         for (unsigned i=0; i<radii.size(); ++i){
@@ -327,17 +335,20 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
             c_all->cd(h_count);
             TCut all_cuts = cuts_r[i] && cuts_eta[j];
 
+            //  Create Histograms for every increment in eta/radii using all_cuts
+
             // file0 : zero pu
             std::string histname0 = "0file" + std::to_string(i) + std::to_string(j);
-            std::string pt_reco_gen_path_0 = path + "_pt_reco_gen" + " >> "+ histname0;
+            std::string pt_reco_gen_path_0 = path + "_pt_reco" + " >> "+ histname0;
 
             tree_0->Draw(pt_reco_gen_path_0.c_str(),all_cuts);
             TH1 *histotmp0 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname0.c_str());
             h_pt_reco_gen_pu.push_back(histotmp0);
             h_count +=1;
-            // file1
+            
+            // file1 : 200 pu , 
             std::string histname1 = "1file" + std::to_string(i) + std::to_string(j);
-            std::string pt_reco_gen_path_200 = path + "_pt_reco_gen" + " >> "+ histname1;
+            std::string pt_reco_gen_path_200 = path + "_pt_reco" + " >> "+ histname1;
 
             tree_pu->Draw(pt_reco_gen_path_200.c_str(),all_cuts);
             TH1 *histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());
@@ -346,8 +357,9 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 
 			//cout << "Debug" << histotmp1->GetMean() << endl;
 
-			std::string histname2 = "1file_reco" + std::to_string(i)+std::to_string(j);
-			std::string pt_reco_path_200 = path + "_pt_reco" + " >> "+ histname2;
+            // histname2 = pt_reco_gen hist  [ pt_reco_gen = pt_reco / pt_gen ] 
+			std::string histname2 = "1file_reco_gen" + std::to_string(i)+std::to_string(j);
+			std::string pt_reco_path_200 = path + "_pt_reco_gen" + " >> "+ histname2;
 
 			tree_pu->Draw(pt_reco_path_200.c_str(), all_cuts);
 			TH1 *histotmp2 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname2.c_str());
@@ -365,7 +377,6 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
 			float Pt_reco_PUcorrected_stdev;
 
 
-
 			//std::cout << " WR: DEBUG: "<<  histotmp1->GetMean() << " "<< histotmp2->GetMean() << endl;
 
             /*offset calcs + decisions*/
@@ -373,58 +384,74 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu,const floatvector&
             // if either mean is zero, discard!
 			if (histotmp0->GetMean() == 0. || histotmp1->GetMean() == 0.  ) {
                  std::cout << " OFFSETCAlC:\tRadius/Eta"<< radii[i]<<"/"<<etas[j] <<"\tDISCARD\n";
+                 std::cout << "\t CHECK that the radii corrospond to clustering done in the data given!\n";
             } else {
-                // now we can do something!
-                floatvector offset_vec = offset(histotmp0->GetMean(), histotmp0->GetStdDev(), histotmp1->GetMean(), histotmp0->GetStdDev(), gen_pt);
-                floatvector tmpout_width;
+                // Calculate the offset
+                //floatvector offset_vec = offset(histotmp0->GetMean(), histotmp0->GetStdDev(), histotmp1->GetMean(), histotmp0->GetStdDev(), gen_pt);
+                floatvector tmpout_stddev;
 				floatvector tmpout_means;
 				floatvector tmpout_res;
+                floatvector tmpout_offset;
 
                 //std::cout << "\t\t" << offset_vec[0]<< std::endl;
 
 				gradient_PU0 = histotmp0->GetMean();
-				Pt_reco_mean = histotmp2->GetMean();
-				Pt_reco_stdev = histotmp2->GetStdDev();
-				offset_value = offset_vec[0];
+				Pt_reco_mean = histotmp1->GetMean();
+				Pt_reco_stdev = histotmp1->GetStdDev();
+				//offset_value = offset_vec[0];
+                
+                // offset = difference between pu200 and pu0 in reco pt
+                offset_value = histotmp1->GetMean() - histotmp0->GetMean(); 
 
-				Pt_reco_PUcorrected_mean = (Pt_reco_mean - offset_value) / gradient_PU0;
-				Pt_reco_PUcorrected_stdev = Pt_reco_stdev / gradient_PU0;
+                // Pt_reco_PUcorrected  = (Pt_reco_mean - offset) / (pt_reco_0 / pt_gen)
+                //              \approx (Pt_reco_mean - offset) *1.
+                // -> NOT REALLY SURE WHY WE NEED TO DIVIDE by pt_reco_0/gen_pt
+				Pt_reco_PUcorrected_mean = Pt_reco_mean - offset_value;
+				Pt_reco_PUcorrected_stdev = Pt_reco_stdev; //WAS: / gradient_PU0; NOT GOING TO CHANGE!
 
-				tmpout_width.push_back(radii[i]);
-				tmpout_width.push_back(etas[j]);
-				tmpout_width.push_back(Pt_reco_PUcorrected_stdev);
+				//store offset value
+                tmpout_offset.push_back(radii[i]);
+                tmpout_offset.push_back(etas[j]);
+                tmpout_offset.push_back(offset_value);
+                
+                tmpout_stddev.push_back(radii[i]);
+				tmpout_stddev.push_back(etas[j]);
+				tmpout_stddev.push_back(Pt_reco_PUcorrected_stdev);
 
 				tmpout_means.push_back(radii[i]);
 				tmpout_means.push_back(etas[j]);
 				tmpout_means.push_back(Pt_reco_PUcorrected_mean);
 
+                // for SIGMA_E / E 
 				tmpout_res.push_back(radii[i]);
 				tmpout_res.push_back(etas[j]);
 				tmpout_res.push_back(Pt_reco_PUcorrected_stdev / Pt_reco_PUcorrected_mean);
 
 
-
-				cor_widths.push_back(tmpout_width);
+				cor_stddev.push_back(tmpout_stddev);
 				cor_means.push_back(tmpout_means);
 				cor_res.push_back(tmpout_res);
-				cout << "for Eta: "<< etas[j] << "   N: " << histotmp2->GetEntries() << endl;
+                PU_offsets.push_back(tmpout_offset);
+				//cout << "for Eta: "<< etas[j] << "   N: " << histotmp2->GetEntries() << endl;
             }
 
 
         // End of eta /R loops
         }}
-	floatvecvecvec all_results = {cor_widths, cor_means, cor_res};
+	
+    //Return results 0:cor_widths 1:cor_means 2:cor_res
+    floatvecvecvec all_results = {cor_stddev, cor_means, cor_res, PU_offsets};
 	return all_results;
 
 }
-void plot_pu_offset(const floatvecvec& pu_offset_results, TFile* fileout){
+void plot_contour(const floatvecvec& results, std::string plotname,TFile* fileout){
 		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this
          * -> Needs Axis labels, title Etc.
          *  */
 		TGraph2D *g2 = new TGraph2D();
 		int count = 0;
-		for (unsigned i=0; i< pu_offset_results.size(); i++) {
-            if (pu_offset_results[i][2] !=0. && pu_offset_results[i][1] >0.){ g2->SetPoint(count, pu_offset_results[i][0], pu_offset_results[i][1], pu_offset_results[i][2]);count++;}
+		for (unsigned i=0; i< results.size(); i++) {
+            if (results[i][2] !=0. && results[i][1] >0.){ g2->SetPoint(count, results[i][0], results[i][1], results[i][2]);count++;}
 		}
 		/* Draw the graph. I should add axis labels and a title here. */
 		//g2->SetTitle("");
@@ -432,7 +459,7 @@ void plot_pu_offset(const floatvecvec& pu_offset_results, TFile* fileout){
 		g2->GetXaxis()->SetTitle("Radius (reduced coordinates)");
 		g2->GetYaxis()->SetTitle("Eta");
 
-		TCanvas *c = new TCanvas("pu_offset", "PU offset", 600, 600);
+		TCanvas *c = new TCanvas(plotname.c_str(), plotname.c_str(), 600, 600);
 		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
 		fileout->Append(c);
 }
@@ -490,9 +517,9 @@ void resolution_corrected(const floatvecvec& pu_offsets, TFile* f, std::string p
 
 
         //Loop over radii
-        for (float test: raR) {
+        //for (float test: raR) {
             //std::cout << " RC: DEBUG: test " << test << std::endl;
-        }
+        //}
 
     }
 }
@@ -612,6 +639,8 @@ void plotMinimas(floatvecvec minimas, TFile* fileout) {
 		fileout->Append(c_m_1);
 		fileout->Append(c_m_2);
 }
+
+
 floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvecvec lines3, floatvecvecvec lines4, floatvector etas, TFile* fileout) {
 
         TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
@@ -629,7 +658,8 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 		float etaerr [n];
 
 
-		for (unsigned i=0; i<lines1.size(); i++) {
+		// ALL OF THIS IS A BIT DUMB, should be using something like a list of input root files
+        for (unsigned i=0; i<lines1.size(); i++) {
 				if (true || i !=4) { //in case a single line gives trouble while debugging, set the first statement to false and the number in the second statement to the line that is giving you trouble.
 				floatvecvec line1 = lines1[i];
 				floatvecvec line2 = lines2[i];
@@ -647,7 +677,7 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 						line[1].push_back(mean);
 						line[2].push_back(width);
 				}
-				int n = line1[0].size();
+				int n = line1[0].size(); // number of entries per sample
 				float x [n];
 				float y [n];
 				float yerr[n];
@@ -658,7 +688,7 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 				copy(line[2].begin(), line[2].end(), yerr);
 
 				for (unsigned j=0; j<n; j++) {
-						xerr[j] = 0.00001; //HARDCODED
+						xerr[j] = 0.00001; //HARDCODED small such that the uncertainty is zero, else should roughly be incR/2
 						if (etas[i] > 0.01) {
 								floatvector tmp = {x[j], etas[i], y[j]};
 								surface_points.push_back(tmp);
@@ -694,7 +724,7 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 						graphname_eta = "Full detector";
 				}
 
-				cout << "PlotLines: Position A \n";
+				//cout << "PlotLines: Position A \n";
 				TGraphErrors *tmpgraph = new TGraphErrors(n, x, y, xerr, yerr);
 				tmpgraph->SetLineColor(i+1);
 				tmpgraph->SetMarkerColor(i+1);
@@ -702,7 +732,7 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 				mg->Add(tmpgraph);
 				}
 		}
-		cout << "PlotLines: Position B: plotting sigE v R";
+		//cout << "PlotLines: Position B: plotting sigE v R";
         mg->SetTitle("Standardized Energy Error");
 		mg->GetXaxis()->SetTitle("Radius (reduced coordinates)");
 		mg->GetYaxis()->SetTitle("Sigma_E/E");
@@ -710,24 +740,23 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 		c_l->BuildLegend(.13, .71, .45, .87, "Eta Midpoints");
 
 		TCanvas *c_besr_r_eta = new TCanvas("c_r", "c_2", 700, 700);
-
-		cout << "PlotLines: Position C: plotting best R v Eta";
+		//cout << "PlotLines: Position C: plotting best R v Eta";
 		TGraphErrors *best_r_eta = new TGraphErrors(n, Etas, radius_minimas, etaerr, radius_minimas_err);
 		best_r_eta->SetTitle("Best Cluster Radius");
         //best_r_eta->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
 		best_r_eta->GetXaxis()->SetTitle("Eta");
-		best_r_eta->Draw();
+		best_r_eta->Draw("A*");
 
-		cout << "PlotLines: Position D: plotting best sigE v Eta";
+		//cout << "PlotLines: Position D: plotting best sigE v Eta";
 		TCanvas *c_best_res_eta = new TCanvas("c_res", "c_res", 700,700);
 		TGraphErrors *best_res_eta = new TGraphErrors(n, Etas, resol_minimas, etaerr, resol_minimas_err);
 		best_res_eta->SetTitle("Standardized Error against Eta");
         best_res_eta->GetXaxis()->SetTitle("Eta");
 		best_res_eta->GetYaxis()->SetTitle("standardized error on the measurement");
 
-		best_res_eta->Draw();
+		best_res_eta->Draw("A*");
 
-		cout << "PlotLines: Position C: appending graphs to file\n";
+		//cout << "PlotLines: Position C: appending graphs to file\n";
 		fileout->Append(mg);
 		fileout->Append(best_res_eta);
 		fileout->Append(best_r_eta);
@@ -737,7 +766,7 @@ floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 
 }
 int main() {
-        std::cout << " MAIN: gradientanalysis.cpp" << std::endl;
+        std::cout << " MAIN: clusteranalysis.cpp" << std::endl;
 		/* open input file */
 		TFile *file_0 = new TFile(filepath_0.c_str(), "READ");
 		TFile *file_1 = new TFile(filepath_1.c_str(), "READ");
@@ -753,11 +782,11 @@ int main() {
 
         std::cout << " MAIN: DEBUG:\t" << tree1->GetEntries() << std::endl;
 
-        // gen_pt! hard coded!
+        /* HARD CODED OPTIONS */
+        
         float gen_pt = 25.0;
 
-		/* Define the list of radii and list of etas */
-        // Hard coded variables :(
+        // Define radii
         float radius_inc = 0.005;
         unsigned radius_n = 12;
         floatvector _radii = generate_radii(radius_n,radius_inc);
@@ -765,6 +794,7 @@ int main() {
         // Define eta
         float eta_inc = 0.2;
 		floatvector _etas = genEta(1.65, 2.81, eta_inc, false);
+        // Add 0.0 as the entire detector
 		_etas.insert(_etas.begin(), 0.0);
         /* the bool at the end specifies if one or both endcaps should be evaluated. (false is one).
          * usually better to just do one, since the graph becomes more readable */
@@ -799,7 +829,6 @@ int main() {
 					TCut tmpcut = tmp1.c_str();
 					cuts_eta.push_back(tmpcut);
 			}
-
         }
 
         // Find PU offset for given cuts in R and Eta
@@ -846,11 +875,21 @@ int main() {
 		floatvecvecvec lines3 = split2d_1d_by_eta(resolution_width(tree0,tree3,_radii,_etas,cuts_r, cuts_eta, base_path, gen_pt)[2], _etas);
 		floatvecvecvec lines4 = split2d_1d_by_eta(resolution_width(tree0,tree4,_radii,_etas,cuts_r, cuts_eta, base_path, gen_pt)[2], _etas);
 
-		TFile *fileout = new TFile(filepath_out.c_str(), "RECREATE");
+		// PLOTS
+        //
+        // create output file 
+        TFile *fileout = new TFile(filepath_out.c_str(), "RECREATE");
+
+        // Statistical analysis here (i.e. multiple runs) 
 		floatvecvec points = plotLines2(lines, lines2, lines3, lines4, _etas, fileout);
-		plot_pu_offset(points, fileout);
-		//plot_pu_offset(Sigma_over_mean_by_r_eta, fileout);
-		//floatvecvec minimas = plotLines(lines, _etas, fileout);
+		
+        // plot_pu_offset is now plot_contour(results, plotname,fileout)
+        //plot_contour(points, "Energy Width Plot" , fileout);
+
+		//plot_contour(Sigma_over_mean_by_r_eta,"inital EE", fileout);
+        plot_contour(all_results[3], "PU offset",fileout);
+		
+        //floatvecvec minimas = plotLines(lines, _etas, fileout);
 		//plotMinimas(minimas, fileout);
 
 		fileout->Write();
