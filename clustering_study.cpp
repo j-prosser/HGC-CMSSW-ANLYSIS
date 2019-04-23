@@ -37,7 +37,7 @@
 
 //HGC build options
 const bool flagTCs = true;
-const bool flagC2D = true;
+const bool flagC2D = false;//true;
 const bool flagC3D = true;
 const bool flagGen = true;
 const bool flagGenPart = false;
@@ -289,7 +289,7 @@ int main(int argc, char **argv){
             /* Use maximas from grid to weight the hti association */
             /* How do i get the maxima? */
             TString s_strat = "MaximumEnergy"; //"MaximumEnergy"; // "defaultMaximum" or "threshold" or "MaximumEnergy"
-            TString a_strat = "EnergySplit"; // "euclidean" or "energyWeight" or "logenergyweight"
+            TString a_strat = "euclidean"; //"EnergySplit"; // "euclidean" or "energyWeight" or "logenergyweight"
             //EnergySplit
 
 
