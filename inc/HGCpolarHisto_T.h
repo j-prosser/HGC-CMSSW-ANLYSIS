@@ -25,6 +25,8 @@ public:
     HGCpolarHisto( unsigned rzNbins , double rzMin , double rzMax , 
                    unsigned phiNbins, double phiMin, double phiMax ) {
 
+        _verboselevel = 0; // 0-off
+
         _rzNbins = rzNbins; 
         _phiNbins = phiNbins; 
         
@@ -100,8 +102,17 @@ public:
             //_histo->Fill( phi, rz, hit.Energy());
             _grid[phiBinId][rzBinId].addContent( hit.Energy(), hit.id() );
         }
-        else
+        else {
             cout << " >>> HGCpolarHisto: bin Id out of range." << endl;
+            //yoyo
+            cout << "\t_phiNbins " << _phiNbins << "\t_rzNbins " << _rzNbins << endl;
+            cout << "\tphiBinId " << phiBinId << "\trzBinId" << rzBinId << endl; 
+        
+    
+            cout << "r/z  "   << r/z     << " - p " << phi << endl;
+            cout << "br/z "   << rzBinId << " - p " << phiBinId << endl;
+            cout << phiBinId  << " "     << rzBinId << endl;
+        }
         _graph->SetPoint( _graph->GetN(), phi, rz);
         
         _hitsMap[hit.id()] = hit;
@@ -142,7 +153,10 @@ private:
 
     /* NEW */
     void getMaximumEnergy(unsigned *nBinsToSum);
-    
+
+    void getInterpolationSeeds(unsigned *nBinsToSum, double thres_MIPT =2.);
+
+
     void getThreshold( unsigned *nBinsToSum, double threshold = 2);//in MIPT
 
     vector<T*> _hits;
@@ -155,6 +169,7 @@ private:
     double *_binArea;
 
     //maybe combine these as a pair
+    int _verboselevel;
     vector<maximaT> _maxima;
     /*NEW*/
     vector<double> _maxima_energies;

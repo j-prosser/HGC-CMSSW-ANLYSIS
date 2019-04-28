@@ -78,7 +78,7 @@ int main(int argc, char **argv){
 
 
     // Radius increment (step)
-	Float_t incR = 0.001;//0.0003; //0.0075;
+	Float_t incR = 0.005;//0.0003; //0.0075;
 	// Number of radii to be analysed
 	unsigned nR = 20;
 	// Create vector of radii 0.019 / 0.015
@@ -272,7 +272,8 @@ int main(int argc, char **argv){
 				/*** Loop over R ***/
 				for (unsigned iRad=0; iRad!=c3dRadii.size() ;++iRad) {
 					const float c3dRadius = c3dRadii[iRad];
-					if (verbose) {std::cout << ">>> iRad:" << iRad <<"\tRad:" << c3dRadius <<" <<<"<< std::endl;}
+
+                    if (verbose) {std::cout << ">>> iRad:" << iRad <<"\tRad:" << c3dRadius <<" <<<"<< std::endl;}
 		
 					// Bin sizes for eventbyevent histograms.	
 					unsigned binSums[36] = { 
@@ -286,42 +287,26 @@ int main(int argc, char **argv){
 			
                     			/*******************************/
 			/**** Trigger from TCs ********/
-			HGCpolarHisto<HGCTC> grid = detector.getSubdet(iendcap, isection)->getPolarFwC3D<HGCTC>( c3dRadius );
+			//HGCpolarHisto<HGCTC> grid = detector.getSubdet(iendcap, isection)->getPolarFwC3D<HGCTC>( c3dRadius );
 			//newC3Ds[iendcap] = grid.getNewC3Ds( c3dRadius, binSums );
             
             
           
             /* Use maximas from grid to weight the hti association */
             /* How do i get the maxima? */
-            TString s_strat = "MaximumEnergy"; //"MaximumEnergy"; // "defaultMaximum" or "threshold" or "MaximumEnergy"
+            //TString s_strat = "MaximumEnergy"; //"MaximumEnergy"; // "defaultMaximum" or "threshold" or "MaximumEnergy"
             // added "Interpolation"
-            TString a_strat = "EnergySplit";//"logenergyWeight"; // "euclidean" or "energyWeight" or "logenergyweight"
+            //TString a_strat = "EnergySplit";//"logenergyWeight"; // "euclidean" or "energyWeight" or "logenergyweight"
             //EnergySplit
 
 
-			tcC3Ds[iendcap][iRad] = grid.getNewC3Ds( c3dRadius, binSums, s_strat, a_strat );
-	        
-            /// If detailed view is needed
-			if(  saveEventByEvent  ) {
-				grid.getHisto()											->Write( 
-						"polarFWtc_gridTcH"  );
-				grid.getHistoSums( binSums, true )						->Write( 
-						"polarFWtc_gridTcHS" );
-				grid.getHistoMaxima( binSums, "defaultMaximum" ,true )	->Write( 
-						"polarFWtc_gridTcM"  );
-				grid.getGraph()											->Write( 
-						"polarFWtc_gridTcG"  );
-			}
+			//tcC3Ds[iendcap][iRad] = grid.getNewC3Ds( c3dRadius, binSums, s_strat, a_strat );
 			
-		/*	if (verbose) {
-				cout << "********************\n";	
-				cout << "truth info:\t" << gen->Pt() << " "<< gen->xNorm() <<" " << gen->yNorm() <<std::endl;
-			}
-*/
             /**Clustering on Gen Loc**/	
             // Trigger from gen loc only
-	        //HGCC3Dgen C3Dgen = detector.getSubdet(iendcap, isection)->getGenC3D( c3dRadius );
-            //geC3Ds[iendcap][iRad] = C3Dgen.getNewC3Ds();
+	        HGCC3Dgen C3Dgen = detector.getSubdet(iendcap, isection)->getGenC3D( c3dRadius );
+            
+            tcC3Ds[iendcap][iRad] = C3Dgen.getNewC3Ds();
 			
 
             /*            if (verbose) {//

@@ -191,6 +191,7 @@ HGCnorm HGCsubdet::getNormTransform_C2D( int nColsTanTheta, double tanThetaMin, 
 }
 
 
+
 HGCnorm HGCsubdet::getNormTransform_C3D( int nColsTanTheta, double tanThetaMin, double tanThetaMax, 
                                          int nRowsRho,      double rhoMin,      double rhoMax, 
                                          double minPhi, double maxPhi,
@@ -279,10 +280,10 @@ HGCC3Dgen HGCsubdet::getGenC3D(double radius) {
 
     HGCC3Dgen genC3D;
 
-    vector<const HGCC2D*> c2ds = this->getAll<HGCC2D>();
+    vector<const HGCTC*> c2ds = this->getAll<HGCTC>();
     vector<HGCgen*>       gens = this->getGenAll();
     
-    for(std::vector<const HGCC2D*>::iterator c2d=c2ds.begin(); c2d!=c2ds.end(); c2d++) {
+    for(std::vector<const HGCTC*>::iterator c2d=c2ds.begin(); c2d!=c2ds.end(); c2d++) {
 
         genC3D.addPoint( *(*c2d), gens, radius );
 

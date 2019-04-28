@@ -9,15 +9,15 @@
 #include "HGCC2D.h"
 #include "HGCC3D.h"
 
-class HGCC3Dgen : public HGCC3DbuildBase<HGCC2D> {
+class HGCC3Dgen : public HGCC3DbuildBase<HGCTC> {
 
 public:
 
     HGCC3Dgen();
     ~HGCC3Dgen();
 
-    void addPoint(const HGCC2D c2d); // not used
-    void addPoint(const HGCC2D c2d, vector<HGCgen*> gens, double radius);
+    void addPoint(const HGCTC c2d); // not used
+    void addPoint(const HGCTC c2d, vector<HGCgen*> gens, double radius);
 
     void clear();
     

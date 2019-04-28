@@ -17,6 +17,7 @@
 #include "TTreeReaderArray.h"
 #include "TGraphErrors.h"
 
+#include <TStyle.h>
 /*yoyo@dyn3162-24:~/Documents/Project/dev/HGC-CMSSW-ANLYSIS$ ls data/loge/
 energy_weight_pu0_200.root         energy_weight_pu200_s200_200.root  energy_weight_pu200_s600_200.root
 energy_weight_pu200_s0_200.root    energy_weight_pu200_s400_200.root*/
@@ -33,21 +34,42 @@ std::string filepath_2 = "data/inve/energy_weight_pu200_s200_200.root";
 std::string filepath_3 = "data/inve/energy_weight_pu200_s400_200.root";
 std::string filepath_4 = "data/inve/energy_weight_pu200_s600_200.root";
 */
-std::string filepath_0 = "data/10_300/thres/pu0_s0_300.root";
-std::string filepath_1 = "data/10_300/thres/pu200_1_s0_300.root";
-std::string filepath_2 = "data/10_300/thres/pu200_1_s300_300.root";
-std::string filepath_3 = "data/10_300/thres/pu200_1_s600_300.root";
-std::string filepath_4 = "data/10_300/thres/pu200_2_s0_300.root";
-std::string filepath_5 = "data/10_300/thres/pu200_2_s300_300.root";
-std::string filepath_6 = "data/10_300/thres/pu200_2_s600_300.root";
-std::string filepath_7 = "data/10_300/thres/pu200_3_s0_300.root";
-std::string filepath_8 = "data/10_300/thres/pu200_3_s300_300.root";
-std::string filepath_9 = "data/10_300/thres/pu200_4_s0_300.root";
-std::string filepath_10= "data/10_300/thres/pu200_4_s300_300.root";
+
+/*
+ *pu0_s0_300.root        pu200_2_s0_300.root    pu200_3_s300_300.root
+pu200_1_s0_300.root    pu200_2_s300_300.root  pu200_4_s0_300.root
+pu200_1_s300_300.root  pu200_2_s600_300.root  pu200_4_s300_300.root
+pu200_1_s600_300.root  pu200_3_s0_300.root
+ * */
+
+std::string base_path = "data/10_300/";
+//Directory Selection
+std::string basic_name = "thres"; // truth/euclid esplit, euclid
+//Clustering Methods
+std::string seed_method= "Interpolation";
+std::string asso_method= "EnergySplit";
+
+
+/* HARD CODED OPTIONS */
+float gen_pt = 25.0;
+// Define radii
+float radius_inc = 0.005;
+unsigned radius_n = 20;
+// Routine to generate filepaths
+std::string filepath_0 = base_path+basic_name+"/"+"pu0_s0_300.root";
+std::string filepath_1 = base_path+basic_name+"/"+"pu200_1_s0_300.root";
+std::string filepath_2 = base_path+basic_name+"/"+"pu200_1_s300_300.root";
+std::string filepath_3 = base_path+basic_name+"/"+"pu200_1_s600_300.root";
+std::string filepath_4 = base_path+basic_name+"/"+"pu200_2_s0_300.root";
+std::string filepath_5 = base_path+basic_name+"/"+"pu200_2_s300_300.root";
+std::string filepath_6 = base_path+basic_name+"/"+"pu200_2_s600_300.root";
+std::string filepath_7 = base_path+basic_name+"/"+"pu200_3_s0_300.root";
+std::string filepath_8 = base_path+basic_name+"/"+"pu200_3_s300_300.root";
+std::string filepath_9 = base_path+basic_name+"/"+"pu200_4_s0_300.root";
+std::string filepath_10= base_path+basic_name+"/"+"pu200_4_s300_300.root";
 
 // Change the output directory to save a copy!
-std::string filepath_out ="data/10_300/thres10graphs.root"; //"_saves/stc10graphs.root";
-
+std::string filepath_out = base_path+basic_name+".root"; //"_saves/stc10graphs.root";
 
 typedef std::vector<float> floatvector;
 typedef std::vector<std::vector<float>> floatvecvec;
@@ -337,6 +359,8 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu, const floatvector
 	floatvecvec cor_res;
     floatvecvec PU_offsets;
 
+    TH1* histotmp0; TH1* histotmp1; TH1* histotmp2;
+    
     for (unsigned j=0; j<etas.size(); ++j) {
         for (unsigned i=0; i<radii.size(); ++i){
 
@@ -350,7 +374,7 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu, const floatvector
             std::string pt_reco_gen_path_0 = path + "_pt_reco" + " >> "+ histname0;
 
             tree_0->Draw(pt_reco_gen_path_0.c_str(),all_cuts);
-            TH1 *histotmp0 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname0.c_str());
+            histotmp0 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname0.c_str());
             h_pt_reco_gen_pu.push_back(histotmp0);
             h_count +=1;
             
@@ -359,7 +383,7 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu, const floatvector
             std::string pt_reco_gen_path_200 = path + "_pt_reco" + " >> "+ histname1;
 
             tree_pu->Draw(pt_reco_gen_path_200.c_str(),all_cuts);
-            TH1 *histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());
+            histotmp1 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname1.c_str());
             h_pt_reco_gen_pu.push_back(histotmp1);
             h_count +=1;
 
@@ -370,7 +394,8 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu, const floatvector
 			std::string pt_reco_path_200 = path + "_pt_reco_gen" + " >> "+ histname2;
 
 			tree_pu->Draw(pt_reco_path_200.c_str(), all_cuts);
-			TH1 *histotmp2 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname2.c_str());
+			histotmp2 = (TH1*)gPad->GetListOfPrimitives()->FindObject(histname2.c_str());
+            h_pt_reco_gen_pu.push_back(histotmp2);
 			h_count +=1;
 
 			//std::cout << "Debug 2" << histotmp2->GetMean() << endl;
@@ -443,7 +468,8 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu, const floatvector
 				//cout << "for Eta: "<< etas[j] << "   N: " << histotmp2->GetEntries() << endl;
             }
 
-
+            
+            histotmp0->Reset(); histotmp1->Reset(); histotmp2->Reset();
         // End of eta /R loops
         }}
 	
@@ -457,6 +483,8 @@ floatvecvecvec resolution_width(TTree* tree_0, TTree* tree_pu, const floatvector
     return all_results;
 
 }
+
+// Plot contour graph of x,y,z
 void plot_contour(const floatvecvec& results, std::string plotname,TFile* fileout){
 		/* generate 2 dimensional graph of gradients vs radius vs eta. I don't know how to include the error on the grdient in this
          * -> Needs Axis labels, title Etc.
@@ -468,13 +496,18 @@ void plot_contour(const floatvecvec& results, std::string plotname,TFile* fileou
 		}
 		/* Draw the graph. I should add axis labels and a title here. */
 		//g2->SetTitle("");
-        g2->GetZaxis()->SetTitle("Sigma_E/E");
-		g2->GetXaxis()->SetTitle("Radius (reduced coordinates)");
-		g2->GetYaxis()->SetTitle("Eta");
+        //g2->GetZaxis()->SetTitle("Sigma_E/E");
+		//g2->GetXaxis()->SetTitle("Radius (reduced coordinates)");
+		//g2->GetYaxis()->SetTitle("Eta");
 
-		TCanvas *c = new TCanvas(plotname.c_str(), plotname.c_str(), 600, 600);
-		g2->Draw("TRI"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
-		fileout->Append(c);
+        //g2->SetTitle(plotname.c_str());
+		g2->SetTitle((plotname+"; #frac{r}{z}; #eta; #sigma_{E_{pu-corr}}/ #bar{E_{pu-corr}}").c_str());
+       
+        //g2->GetXaxis()->SetLabelSize(0.1);
+
+        TCanvas *contourCanvas = new TCanvas(("contourCanvas:"+plotname).c_str(), plotname.c_str(), 960, 720);
+		g2->Draw("TRI2"); //empty draws a scatter plot, "TRI" draws a surface using triangles.
+		fileout->Append(contourCanvas);
 }
 
 int get_eta_index(float test_eta, const std::vector<float>& etas, float eta_inc){
@@ -641,24 +674,25 @@ void plotMinimas(floatvecvec minimas, TFile* fileout) {
 		TCanvas *c_m_1 = new TCanvas("Best Resolution by Eta", "Best Resolution by Eta", 700, 700);
 
 		TGraph *g1 = new TGraph(n, etas, res);
-		g1->GetXaxis()->SetTitle("Eta");
-		g1->GetYaxis()->SetTitle("Best SigmaE/E");
-		g1->Draw("ac*");
+		g1->GetXaxis()->SetTitle("#eta");
+		g1->GetYaxis()->SetTitle("#frac{r}{z}");
+		g1->Draw("a*");
 
 		TCanvas *c_m_2 = new TCanvas("Best Radius by Eta", "Best Radius by Eta", 700, 700);
 		TGraph *g2 = new TGraph(n, etas, radii);
-		g2->GetXaxis()->SetTitle("Eta");
-		g2->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
-		g2->Draw("ac*");
+		g2->GetXaxis()->SetTitle("#eta");
+		g2->GetYaxis()->SetTitle("#frac{r}{z}");
+		g2->Draw("a*");
 		fileout->Append(c_m_1);
 		fileout->Append(c_m_2);
 }
 
 
 
-floatvecvec plotLines3(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvecvec lines3, floatvecvecvec lines4, floatvecvecvec lines5, floatvecvecvec lines6, floatvecvecvec lines7, floatvecvecvec lines8, floatvecvecvec lines9, floatvecvecvec lines10, floatvector etas, TFile* fileout) {
+floatvecvec plotLineGraphs(float eta_inc, floatvecvecvec lines1, floatvecvecvec lines2, floatvecvecvec lines3, floatvecvecvec lines4, floatvecvecvec lines5, floatvecvecvec lines6, floatvecvecvec lines7, floatvecvecvec lines8, floatvecvecvec lines9, floatvecvecvec lines10, floatvector etas, TFile* fileout) {
 
-        TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
+        // w,h
+        TCanvas *c_l = new TCanvas("mgLineCanvas:EnergyWidthCurves", "PU-corrected energy width curves", 960, 720);
 		c_l->SetGrid();
 		TMultiGraph *mg = new TMultiGraph();
 
@@ -674,6 +708,7 @@ floatvecvec plotLines3(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 		float etaerr [n];
 
 
+        int color_start =20;
 		// ALL OF THIS IS A BIT DUMB, should be using something like a list of input root files
        
         // loop over etas
@@ -741,11 +776,14 @@ floatvecvec plotLines3(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 				}
 
 				if (etas[i_eta] > 0.1) {
-					resol_minimas[i_eta-1] = y[min(y,n)];
+                    //make eta the midpoint
+                    etas[i_eta] += eta_inc/2;
+					
+                    resol_minimas[i_eta-1] = y[min(y,n)];
 					radius_minimas[i_eta-1] = x[min(y,n)];
 					resol_minimas_err[i_eta-1] = yerr[min(y,n)];
 					radius_minimas_err[i_eta-1] = xerr[min(y,n)];
-					etaerr[i_eta-1] = 0.0;
+					etaerr[i_eta-1] = eta_inc/2;
 					Etas[i_eta-1] = etas[i_eta];
 
 
@@ -756,7 +794,7 @@ floatvecvec plotLines3(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 				string graphname_eta;
 				if (etas[i_eta] > 0.01) {
                     // decimal places for histgoram key
-					graphname_eta = Form("%.3f", etas[i_eta]); // to_string(etas[i]);
+					graphname_eta = Form("%.2f", etas[i_eta]); // to_string(etas[i]);
 					//graphname_eta = to_string(etas[i]);
 
 				} else {
@@ -765,175 +803,72 @@ floatvecvec plotLines3(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvec
 
 		//		cout << "PlotLines: Position A \n";
 				TGraphErrors *tmpgraph = new TGraphErrors(n, x, y, xerr, yerr);
-				tmpgraph->SetLineColor(i_eta+1);
-				tmpgraph->SetMarkerColor(i_eta+1);
+				
+			    tmpgraph->SetMarkerStyle(color_start + i_eta); 	
+                cout << tmpgraph->GetMarkerStyle() << endl;
+                tmpgraph->SetLineColor(color_start+ 3*i_eta);
+				tmpgraph->SetMarkerColor(color_start +3*i_eta);
+                tmpgraph->SetMarkerSize(1);
 				tmpgraph->SetTitle(graphname_eta.c_str());
-				mg->Add(tmpgraph);
+                mg->Add(tmpgraph);
 				}
 		}
 		//cout << "PlotLines: Position B: plotting sigE v R";
-        mg->SetTitle("Standardized Energy Error");
-		mg->GetXaxis()->SetTitle("Radius (reduced coordinates)");
-		mg->GetYaxis()->SetTitle("Sigma_E/E");
-		mg->Draw("ac*");
-		c_l->BuildLegend(.13, .71, .45, .87, "Eta Midpoints");
-
-		TCanvas *c_besr_r_eta = new TCanvas("c_r", "c_2", 700, 700);
+        
+        
+        //mg->SetTitle("PU-Corrected Energy Width");
+        //mg->SetTitle("Euclidean Clustering on Truth Particle Seed");
+		mg->GetXaxis()->SetTitle("Clustering Radii, R = #frac{r}{z}");
+		mg->GetYaxis()->SetTitle("#sigma_{E_{pu-corr}}/ #bar{E_{pu-corr}}");
+		//c_l->BuildLegend(.13, .71, .45, .87, "Eta Edges");
+        mg->Draw("APL");
+        // x1,y1,x2,y2
+       
+		gStyle->SetLineStyleString(11,"400 200");
+        c_l->BuildLegend(.21, .21, .21, .21, "#eta_{mid}");
+        c_l->Update(); 
+        
+        
+        TCanvas *c_besr_r_eta = new TCanvas("LineCanvas:BestClusterRadius", "Best Cluster Radius", 960, 720);
 		//cout << "PlotLines: Position C: plotting best R v Eta";
 		TGraphErrors *best_r_eta = new TGraphErrors(n, Etas, radius_minimas, etaerr, radius_minimas_err);
-		best_r_eta->SetTitle("Best Cluster Radius");
+		
+        c_besr_r_eta->SetGrid();
+        //best_r_eta->SetTitle("Best Cluster Radius");
+        best_r_eta->SetTitle(" ");
         //best_r_eta->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
-		best_r_eta->GetXaxis()->SetTitle("Eta");
+		best_r_eta->GetXaxis()->SetTitle("#eta");
+		best_r_eta->GetYaxis()->SetTitle("Clustering Radii, R = #frac{r}{z}");
 		best_r_eta->Draw("A*");
+        c_besr_r_eta->Update();
 
 		//cout << "PlotLines: Position D: plotting best sigE v Eta";
-		TCanvas *c_best_res_eta = new TCanvas("c_res", "c_res", 700,700);
-		TGraphErrors *best_res_eta = new TGraphErrors(n, Etas, resol_minimas, etaerr, resol_minimas_err);
-		best_res_eta->SetTitle("Standardized Error against Eta");
-        best_res_eta->GetXaxis()->SetTitle("Eta");
-		best_res_eta->GetYaxis()->SetTitle("standardized error on the measurement");
-
-		best_res_eta->Draw("A*");
+		TCanvas *c_best_res_eta = new TCanvas("LineCanvas:BestEnergyWidth", "Best Energy Width", 960,720);
+        c_best_res_eta->SetGrid();
+        TGraphErrors *best_res_eta = new TGraphErrors(n, Etas, resol_minimas, etaerr, resol_minimas_err);
+		//best_res_eta->SetTitle("Standardized Error against Eta");
+		best_res_eta->SetTitle(" ");
+        best_res_eta->GetXaxis()->SetTitle("#eta");
+		best_res_eta->GetYaxis()->SetTitle("#sigma_{P_{T,pu-corr}}/ #bar{P_{T,pu-corr}}");
+	    best_res_eta->Draw("A*");
+        c_best_res_eta->Update();
 
 		//cout << "PlotLines: Position C: appending graphs to file\n";
 		fileout->Append(mg);
 		fileout->Append(best_res_eta);
 		fileout->Append(best_r_eta);
 
+        fileout->Append(c_l);
+        fileout->Append(c_besr_r_eta);
+        fileout->Append(c_best_res_eta);
+        
         //cleanup
-        c_besr_r_eta->Close(); c_best_res_eta->Close();
+        //c_besr_r_eta->Close(); c_best_res_eta->Close();
 
 		return surface_points;
 }
 
 
-floatvecvec plotLines2(floatvecvecvec lines1, floatvecvecvec lines2, floatvecvecvec lines3, floatvecvecvec lines4, floatvector etas, TFile* fileout) {
-
-        TCanvas *c_l = new TCanvas("Sigma_E/E vs. R for different Etas", "Sigma_E/E vs. R for different Etas", 700, 700);
-		c_l->SetGrid();
-		TMultiGraph *mg = new TMultiGraph();
-
-		floatvecvec surface_points;
-
-		int n = etas.size() -1;
-		float resol_minimas [n];
-		float radius_minimas [n];
-		float resol_minimas_err [n];
-		float radius_minimas_err [n];
-		float Etas [n];
-		float etaerr [n];
-
-
-		// ALL OF THIS IS A BIT DUMB, should be using something like a list of input root files
-        for (unsigned i=0; i<lines1.size(); i++) {
-				if (true || i !=4) { //in case a single line gives trouble while debugging, set the first statement to false and the number in the second statement to the line that is giving you trouble.
-				floatvecvec line1 = lines1[i];
-				floatvecvec line2 = lines2[i];
-				floatvecvec line3 = lines3[i];
-				floatvecvec line4 = lines4[i];
-
-
-				floatvecvec line = {{},{}, {}};
-
-				for (unsigned i=0; i<line1[0].size();i++) {
-						line[0].push_back(line1[0][i]);
-						float mean = (line1[1][i] + line2[1][i] + line3[1][i] + line4[1][i])/4.;
-						float mean_of_squares = (line1[1][i]*line1[1][i]+line2[1][i]*line2[1][i]+line3[1][i]*line3[1][i]+line4[1][i]*line4[1][i])/4;
-						float width = sqrt(mean_of_squares -mean*mean);
-						line[1].push_back(mean);
-						line[2].push_back(width);
-				}
-				int n = line1[0].size(); // number of entries per sample
-				float x [n];
-				float y [n];
-				float yerr[n];
-				float xerr[n];
-
-				copy(line[0].begin(), line[0].end(), x);
-				copy(line[1].begin(), line[1].end(), y);
-				copy(line[2].begin(), line[2].end(), yerr);
-
-				for (unsigned j=0; j<n; j++) {
-						xerr[j] = 0.00001; //HARDCODED small such that the uncertainty is zero, else should roughly be incR/2
-						if (etas[i] > 0.01) {
-								floatvector tmp = {x[j], etas[i], y[j]};
-								surface_points.push_back(tmp);
-						}
-				}
-
-				if (i == 0 && etas[i] < 0.01) {
-						cout << "Everything is fine." << endl;
-				} else if (i == 0) {
-						cout << "Not fine." << endl;
-				}
-
-				if (etas[i] > 0.1) {
-					resol_minimas[i-1] = y[min(y,n)];
-					radius_minimas[i-1] = x[min(y,n)];
-					resol_minimas_err[i-1] = yerr[min(y,n)];
-					radius_minimas_err[i-1] = xerr[min(y,n)];
-					etaerr[i-1] = 0.0;
-					Etas[i-1] = etas[i];
-
-
-				} else  {
-						cout << y[min(y, n)] << " " << yerr[min(y,n)] << endl;
-				}
-
-				string graphname_eta;
-				if (etas[i] > 0.01) {
-                    // decimal places for histgoram key
-					graphname_eta = Form("%.3f", etas[i]); // to_string(etas[i]);
-					//graphname_eta = to_string(etas[i]);
-
-				} else {
-						graphname_eta = "Full detector";
-				}
-
-				//cout << "PlotLines: Position A \n";
-				TGraphErrors *tmpgraph = new TGraphErrors(n, x, y, xerr, yerr);
-				tmpgraph->SetLineColor(i+1);
-				tmpgraph->SetMarkerColor(i+1);
-				tmpgraph->SetTitle(graphname_eta.c_str());
-				mg->Add(tmpgraph);
-				}
-		}
-		//cout << "PlotLines: Position B: plotting sigE v R";
-        mg->SetTitle("Standardized Energy Error");
-		mg->GetXaxis()->SetTitle("Radius (reduced coordinates)");
-		mg->GetYaxis()->SetTitle("Sigma_E/E");
-		mg->Draw("ac*");
-		c_l->BuildLegend(.13, .71, .45, .87, "Eta Midpoints");
-
-		TCanvas *c_besr_r_eta = new TCanvas("c_r", "c_2", 700, 700);
-		//cout << "PlotLines: Position C: plotting best R v Eta";
-		TGraphErrors *best_r_eta = new TGraphErrors(n, Etas, radius_minimas, etaerr, radius_minimas_err);
-		best_r_eta->SetTitle("Best Cluster Radius");
-        //best_r_eta->GetYaxis()->SetTitle("Best radius (reduced coordinates)");
-		best_r_eta->GetXaxis()->SetTitle("Eta");
-		best_r_eta->Draw("A*");
-
-		//cout << "PlotLines: Position D: plotting best sigE v Eta";
-		TCanvas *c_best_res_eta = new TCanvas("c_res", "c_res", 700,700);
-		TGraphErrors *best_res_eta = new TGraphErrors(n, Etas, resol_minimas, etaerr, resol_minimas_err);
-		best_res_eta->SetTitle("Standardized Error against Eta");
-        best_res_eta->GetXaxis()->SetTitle("Eta");
-		best_res_eta->GetYaxis()->SetTitle("standardized error on the measurement");
-
-		best_res_eta->Draw("A*");
-
-		//cout << "PlotLines: Position C: appending graphs to file\n";
-		fileout->Append(mg);
-		fileout->Append(best_res_eta);
-		fileout->Append(best_r_eta);
-
-        //Cleanup
-        c_besr_r_eta->Close(); c_best_res_eta->Close();
-
-		return surface_points;
-
-
-}
 int main() {
         std::cout << " MAIN: clusteranalysis.cpp" << std::endl;
 		/* open input file */
@@ -951,13 +886,8 @@ int main() {
 
         std::cout << " MAIN: DEBUG:\t" << tree1->GetEntries() << std::endl;
 
-        /* HARD CODED OPTIONS */
-        
-        float gen_pt = 25.0;
 
-        // Define radii
-        float radius_inc = 0.005;
-        unsigned radius_n = 20;
+
         floatvector _radii = generate_radii(radius_n,radius_inc);
 
         // Define eta
@@ -1022,7 +952,8 @@ int main() {
 
 		/* find Resolution for given R & Eta */
 
-		floatvecvecvec all_results = resolution_width(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, base_path, gen_pt); //3D vector, <<r, eta, width>,<r, eta, mean>,<r, eta, width/mean>>
+		floatvecvecvec all_results = resolution_width(tree0,tree1,_radii,_etas,cuts_r, cuts_eta, base_path, gen_pt); 
+        //3D vector, <<r, eta, sigma>, <r, eta, mean>, <r, eta, sigma/mean>>
 
 
 		floatvecvec Sigma_over_mean_by_r_eta = all_results[2];
@@ -1065,22 +996,34 @@ int main() {
         floatvecvecvec lines10 = split2d_1d_by_eta(resolution_width(tree0,tree10,_radii,_etas,cuts_r, cuts_eta, base_path, gen_pt)[2], _etas);
 		
         // PLOTS
-        //
+        ///plotLineGraphs
         // create output file 
+        std::cout << " MAIN: fileout: "<< filepath_out  << std::endl;  
         TFile *fileout = new TFile(filepath_out.c_str(), "RECREATE");
+
 
         // Statistical analysis here (i.e. multiple runs) 
 		//floatvecvec points = plotLines2(lines, lines2, lines3, lines4, _etas, fileout);
 		
-        floatvecvec points = plotLines3(lines, lines2, lines3, lines4,lines5,lines6,lines7,lines8,lines9,lines10, _etas, fileout);
+        floatvecvec points = plotLineGraphs(eta_inc, lines,lines2,lines3,lines4,lines5,
+                lines6,lines7,lines8,lines9,lines10, _etas, fileout);
         
         // plot_pu_offset is now plot_contour(results, plotname,fileout)
         //plot_contour(points, "Energy Width Plot" , fileout);
 
 		//plot_contour(Sigma_over_mean_by_r_eta,"inital EE", fileout);
+       
+
+        // all_results used to illustrate single batch results (nominal 100events*2*nR) 
+        // 0 - sigma
+        // 1 - mean
+        // 2 - "width" sigma/mean
+        // 3 - pu-offset
         
         plot_contour(all_results[3], "PU offset",fileout);
-		
+        plot_contour(all_results[2], "Corrected Energy Width", fileout);
+        plot_contour(all_results[1], "Energy S.D", fileout);
+
         //floatvecvec minimas = plotLines(lines, _etas, fileout);
 		//plotMinimas(minimas, fileout);
 

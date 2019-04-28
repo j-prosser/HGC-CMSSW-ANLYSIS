@@ -274,18 +274,26 @@ void HGCpolarHisto<T>::getDefaultMaximum( unsigned *nBinsToSum ) {
 
 }
 
-/*NEW*/
 template<class T>
 void HGCpolarHisto<T>::getMaximumEnergy( unsigned *nBinsToSum ) {
     /* Gets the maximas, and the value associated witht eh energy of each maximum*/
 
+    /* What does this do? 
+     *  Populates _maxima with x,y coords of maximas
+     *  Populates _maxima_energies with respective histogram energy values for possible use in seed assoc stage
+     *
+     * */
   /* searching for maxima */
   for (unsigned irz=0; irz<_rzNbins; irz++) {
     
         double rows[_phiNbins][3];
         
         for (unsigned iphi=0; iphi<_phiNbins; iphi++) {
-            
+           
+            /*  2 - position to right
+             *  1 - central value
+             *  0 - position to left
+             * */
             if ( irz == 0 ) {
                 rows[iphi][2] = _histoSums->GetBinContent(iphi+1, irz+2);
                 rows[iphi][1] = _histoSums->GetBinContent(iphi+1, irz+1);
@@ -378,6 +386,131 @@ void HGCpolarHisto<T>::getMaximumEnergy( unsigned *nBinsToSum ) {
 
 
 
+template<class T>
+void HGCpolarHisto<T>::getInterpolationSeeds( unsigned *nBinsToSum, double thres_MIPT ) {
+    /* Gets the maximas, and the value associated witht eh energy of each maximum*/
+
+    /* What does this do? 
+     *  Populates _maxima with x,y coords of maximas
+     *  Populates _maxima_energies with respective histogram energy values for possible use in seed assoc stage
+     *
+     * */
+  /* searching for maxima */
+  
+    /* INTERPOLATION
+     *  Implementing: https://github.com/PFCal-dev/cmssw/blob/0f335e7a794cdb59da49175e818929466e0d24e9/L1Trigger/L1THGCal/src/backend/HGCalHistoSeedingImpl.cc#L217
+     *
+     * */
+   
+    //first order interpolation here
+    
+    std::vector<double> neighbour_weights_{0    , 0.25, 0   ,
+                                           0.25 , 0   , 0.25,
+                                           0    , 0.25, 0}; 
+    
+    
+    /*
+    std::vector<double> neighbour_weights_{ -0.25, 0.5, -0.25,
+                                            0.5 , 0  ,  0.5 ,
+                                            -0.25, 0.5, -0.25};
+    */
+    
+    
+    //std::cout << " INT ";
+   
+    //cout << "_rzNbins "<< _rzNbins << " _phiNbins " <<_phiNbins << endl;
+
+    double centralValue, MIPT_E, MIPT_N, MIPT_S, MIPT_W, MIPT_NE, MIPT_NW, MIPT_SE, MIPT_SW, MIPT_pred; 
+
+
+    double curr_hist_max =0.;
+
+    bool isMax = false;
+    for (unsigned irz=0; irz<_rzNbins; irz++) {
+    
+        for (unsigned iphi=0; iphi<_phiNbins; iphi++) {
+            
+            centralValue = _histoSums->GetBinContent(iphi+1,irz+1);
+
+            MIPT_S = irz<(int(_rzNbins)-1) ? _histoSums->GetBinContent(iphi+1,irz+2) : 0;
+            MIPT_N = irz>0 ? _histoSums->GetBinContent(iphi+1,irz) : 0;
+
+            int binLeft = iphi;
+            if( binLeft<0 ) binLeft += _phiNbins;
+            int binRight = iphi + 2;
+            if( binRight>=int(_phiNbins) ) binRight -= _phiNbins;
+
+            MIPT_W = _histoSums->GetBinContent(binLeft,irz+1);
+            MIPT_E = _histoSums->GetBinContent(binRight,irz+1);
+
+            MIPT_NW = irz>0 ? _histoSums->GetBinContent(binLeft,irz) : 0;
+            MIPT_NE = irz>0 ? _histoSums->GetBinContent(binRight,irz) : 0;
+            
+            MIPT_SW = irz<(int(_rzNbins)-1) ? _histoSums->GetBinContent(binLeft,irz+2) : 0;
+            MIPT_SE = irz<(int(_rzNbins)-1) ? _histoSums->GetBinContent(binRight,irz+2) : 0;
+            
+                
+            MIPT_pred = neighbour_weights_[0] * MIPT_NW + neighbour_weights_[1] * MIPT_N + neighbour_weights_[2] * MIPT_NE
+                  + neighbour_weights_[3] * MIPT_W + neighbour_weights_[5] * MIPT_E + neighbour_weights_[6] * MIPT_SW
+                  + neighbour_weights_[7] * MIPT_S + neighbour_weights_[8] * MIPT_SE;
+
+            isMax = false; 
+            isMax = centralValue>=(MIPT_pred+thres_MIPT);
+            
+            if(isMax && (centralValue > curr_hist_max) ){
+                curr_hist_max = centralValue;
+                if (_verboselevel)
+                    cout << "UPDATE: "; 
+            }   
+      
+            if ((isMax) && (curr_hist_max*0.5 > centralValue)) {
+                isMax = false;
+            }
+
+            if(isMax){
+	    
+
+               // if (_verboselevel)
+               //     cout << " seed e " << centralValue << endl;   
+
+                /*Add maxima energies to vector*/
+                _maxima_energies.push_back( centralValue );
+                
+                
+                _histoMaxima->SetBinContent(iphi+1, irz+1,_histoSums->GetBinContent(iphi+1, irz+1));
+	      
+	            vector<unsigned> idsBin = _grid[iphi][irz].getIds();
+	      
+	            maximaT maxima(0.,0.);
+	      
+	            for( auto id : idsBin ){
+		            T *hit = &(_hitsMap[id]);
+		    
+		            maxima.first = maxima.first + hit->xNorm(); 
+		            maxima.second = maxima.second + hit->yNorm();
+                }
+	      
+	        
+                if( idsBin.size() == 0 ) continue;
+	            maxima.first = maxima.first / idsBin.size(); 
+	            maxima.second = maxima.second / idsBin.size(); 
+	      
+	            //if (_verboselevel)
+                    //cout << maxima.first << " " << maxima.second <<endl;
+
+                _maxima.push_back( maxima );
+	     
+            }
+	    
+	
+        }
+
+
+    }
+    //cout << " seeds " << _maxima.size() << endl; 
+    
+    
+}
 
 
 template<class T>
@@ -427,7 +560,9 @@ void HGCpolarHisto<T>::getThreshold( unsigned *nBinsToSum, double threshold ) {/
 template<class T>
 TH2D * HGCpolarHisto<T>::getHistoMaxima( unsigned *nBinsToSum, TString strategy, bool smear ) {
 
-  /* filling _histoSums */
+    //decides seeding strategy
+ 
+    /* filling _histoSums */
   this->getHistoSums( nBinsToSum, smear );
 
 
@@ -452,7 +587,12 @@ TH2D * HGCpolarHisto<T>::getHistoMaxima( unsigned *nBinsToSum, TString strategy,
     // new 
     this->getMaximumEnergy( nBinsToSum );
   
-  } 
+  }
+
+  if ( strategy == "Interpolation" ) { 
+
+    this->getInterpolationSeeds(nBinsToSum, 10.0); 
+  }   
 
 
   //TODO 
@@ -485,10 +625,15 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
 
     //TODO Implement energy dividing scheme corrosponding to the seed energy
     // https://github.com/PFCal-dev/cmssw/blob/0f335e7a794cdb59da49175e818929466e0d24e9/L1Trigger/L1THGCal/src/backend/HGCalHistoClusteringImpl.cc#L45 
-    
-    this->getMaxima( nBinsToSum, seed_strategy, smear );
+   
+  //  _verboselevel
+        
+    this->getHistoMaxima( nBinsToSum, seed_strategy, smear );
 
     /* _maxima is a vector of pairs of doubles corrosponding to the x and y coordinates of the maxima in the grid. */
+
+    if (_verboselevel)
+        cout << "  getNewC3Ds: _maxima.size() " << _maxima.size() << endl;  
 
     HGCC3D c3ds[_maxima.size()];
 
@@ -550,7 +695,7 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
                 //double dist =  sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
        
                 // constant 200,000 is fairly arbiary
-                double dist_e_weight = (200000 / _maxima_energies[i] )  * sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
+                double dist_e_weight = (1000000 / _maxima_energies[i] )  * sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
        
                 //cout << " Euclidean Dist: " << dist << "\tE Weighted: " << dist_e_weight << endl; 
                 
@@ -592,13 +737,17 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
                 // SCALE BY ENERGY HERE
                 
                 // uses simple euclidean distance to determine wether part of cluster or not
+                //
+                //
                 //double dist =  sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
        
                 // constant 200,000 is fairly arbiary
-                double dist_e_weight = (1. / log( (1.+_maxima_energies[i] ) ) )  * sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
+                //double dist_e_weight = (1. / log( (1.+_maxima_energies[i] ) ) )  * sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
+                double dist_e_weight =(100./(4.0* log( (1.+_maxima_energies[i] ) )))  * sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
        
                 //cout << " Euclidean Dist: " << dist << "\tE Weighted: " << dist_e_weight << endl; 
-                
+                //cout << " debug " << dist << " " << dist_e_weight << endl;  
+
                 // minimises distance wrt c3d euclid distance 
                 if( distance>dist_e_weight) {
                     distance = dist_e_weight;
@@ -663,31 +812,26 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
             } 
         }
 
-    } 
-
-
- else if(assoc_strategy == "EnergySplit"){
+    } else if(assoc_strategy == "EnergySplit"){
         // implement Energy Split here   
         int i=0;
+        // declare vector to store targetEnergies
+        std::vector<pair<int,double> > targetSeeds;
         for(unsigned ihit=0; ihit<_hits.size(); ihit++){
 
             const T* hit = _hits.at( ihit );
             
-            // declare vector to store targetEnergies
-            std::vector<pair<int,double> > targetSeeds;
+            targetSeeds.clear(); 
 
-//Loop over Seeds/Maximas etc
+            //Loop over Seeds/Maximas etc
             for(int iseed=0; iseed < _maxima.size(); ++iseed){
                 double dist = sqrt( pow( _maxima.at(i).first-hit->xNorm() , 2 ) + pow( _maxima.at(i).second-hit->yNorm(), 2 ) );
-      
                
                 // minimises distance wrt c3d euclid distance 
                 if(dist<radius) {
                     //append seed idx and seed energy to container
                     targetSeeds.emplace_back(iseed, _maxima_energies[iseed]);
-
                 }
-        
             } 
    
          
@@ -712,10 +856,11 @@ vector<HGCC3D> HGCpolarHisto<T>::getNewC3Ds( double radius, unsigned *nBinsToSum
 
                 this->addHitToC3D( c3ds, energy.first, &(_hitsMap[hit->id()]), seedWeight);
 
-      }
-        
+      
+            }
+        }
     }
- }
+
     for( auto c3d : c3ds ) {
         if(c3d.nclusters()>0 || c3d.ncells()>0)
             this->addNewC3D( c3d );

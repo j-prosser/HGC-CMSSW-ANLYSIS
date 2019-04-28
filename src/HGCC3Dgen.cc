@@ -10,12 +10,12 @@ HGCC3Dgen::~HGCC3Dgen() {
 
 }
 
-void HGCC3Dgen::addPoint(const HGCC2D c2d){
+void HGCC3Dgen::addPoint(const HGCTC c2d){
 
 }
 
 
-void HGCC3Dgen::addPoint(const HGCC2D c2d, vector<HGCgen*> gens, double radius){
+void HGCC3Dgen::addPoint(const HGCTC c2d, vector<HGCgen*> gens, double radius){
 
     for( vector<HGCgen*>::iterator gen=gens.begin(); gen!=gens.end(); gen++ ) {
         
@@ -31,14 +31,14 @@ void HGCC3Dgen::addPoint(const HGCC2D c2d, vector<HGCgen*> gens, double radius){
 
         if (dist > radius)
             continue;
-
+        
         /* new c3d or already existing one */
         if( this->getNewC3Ds().size() == 0          || 
             _genC3D.find( (*gen)->id() ) == _genC3D.end() ) {
 
             HGCC3D c3d;
             
-            c3d.addC2D( &c2d );
+            c3d.addTC( &c2d );
             
             this->addNewC3D( c3d );
             _genC3D[(*gen)->id()] = c3d.id();
@@ -46,7 +46,7 @@ void HGCC3Dgen::addPoint(const HGCC2D c2d, vector<HGCgen*> gens, double radius){
         }
         else {
             unsigned c3dId = _genC3D[(*gen)->id()];
-            this->getC3D( c3dId )->addC2D( &c2d );
+            this->getC3D( c3dId )->addTC( &c2d );
         }   
 
     }
@@ -54,9 +54,10 @@ void HGCC3Dgen::addPoint(const HGCC2D c2d, vector<HGCgen*> gens, double radius){
 }
 
 
+
 void HGCC3Dgen::clear() {
 
-    HGCC3DbuildBase<HGCC2D>::clear();
+    HGCC3DbuildBase<HGCTC>::clear();
     _genC3D.clear();
 
 }
